@@ -3,7 +3,7 @@
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useParams, useRouter } from "next/navigation";
 import { EditorProvider } from "@/components/editor/editor-context";
@@ -18,6 +18,8 @@ import { BrowserWarning } from "@/components/editor/browser-warning";
 import { getProject } from "@/lib/storage";
 import { TimelineProvider } from "@/context/TimelineContext";
 import { cn } from "@/lib/utils";
+import { LayoutColumn, DEFAULT_LAYOUT } from "../../../components/editor/layout-types";
+
 
 export default function EditorPage() {
   const params = useParams<{ id: string }>();
@@ -29,6 +31,7 @@ export default function EditorPage() {
   const [rightWidth, setRightWidth] = useLocalStorage<number>("caplay_panel_right_width", 400);
   const [statesHeight, setStatesHeight] = useLocalStorage<number>("caplay_panel_states_height", 350);
   const [autoClosePanels] = useLocalStorage<boolean>("caplay_settings_auto_close_panels", true);
+  const [layout, setLayout] = useLocalStorage<LayoutColumn[]>("caplay_editor_layout", DEFAULT_LAYOUT);
   const leftPaneRef = useRef<HTMLDivElement | null>(null);
   const [showLeft, setShowLeft] = useState(true);
   const [showRight, setShowRight] = useState(false);
@@ -163,9 +166,9 @@ export default function EditorPage() {
             setRightWidth={setRightWidth}
             setStatesHeight={setStatesHeight}
           />
-          <div className="flex-1 px-4 py-4 overflow-hidden">
+          <div className="flex-1 overflow-hidden p-4">
             {isMobilePortrait ? (
-              // Mobile portrait layout -  toggle between full canvas or full panel screen
+              // Mobile portrait layout (keep mobile as is with its own p-4)
               <div className="h-full w-full flex flex-col" ref={mobileContainerRef}>
                 {mobileView === 'canvas' ? (
                   <div className="min-h-0 flex-1 pb-16">
@@ -185,7 +188,7 @@ export default function EditorPage() {
                     </div>
                     <div className="h-full overflow-auto">
                       {mobilePanelScreen === 'layers_states' ? (
-                        <div className="flex flex-col gap-3 min-h-0">
+                        <div className="flex flex-col gap-3 min-h-0 text-white">
                           <div className="min-h-0">
                             <LayersPanel />
                           </div>
@@ -202,36 +205,109 @@ export default function EditorPage() {
                 <MobileBottomBar mobileView={mobileView} setMobileView={setMobileView} />
               </div>
             ) : (
-              // Desktop/tablet layout: original side panels
-              <div className="h-full w-full flex gap-0">
-                {showLeft && (
-                  <>
-                    <div className="min-h-0 flex-shrink-0" style={{ width: leftWidth }}>
-                      <div ref={leftPaneRef} className="h-full min-h-0 flex flex-col pr-1">
-                        <div className="flex-1 min-h-0 overflow-hidden" style={{ flex: '1 1 auto' }}>
-                          <LayersPanel />
+              <div className="h-full w-full flex gap-4">
+                {layout.map((col, index) => {
+                  const isLast = index === layout.length - 1;
+
+                  const renderItem = (itemId: string) => {
+                    switch (itemId) {
+                      case 'layers':
+                        return (
+                          <div ref={leftPaneRef} className="h-full min-h-0 flex flex-col gap-4">
+                            <div className="flex-1 min-h-0 overflow-hidden" style={{ flex: '1 1 auto' }}>
+                              <LayersPanel />
+                            </div>
+                            <div
+                              className="relative w-full h-1 -my-2.5 cursor-row-resize flex-shrink-0 z-10 hover:bg-primary/20 transition-colors"
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                const startY = e.clientY;
+                                const start = statesHeight;
+                                const RESIZER = 4;
+                                const MIN_TOP = 140;
+                                const MIN_BOTTOM = 120;
+                                const paneEl = leftPaneRef.current;
+                                const total = paneEl ? paneEl.getBoundingClientRect().height : 0;
+                                const onMove = (ev: MouseEvent) => {
+                                  const dy = ev.clientY - startY;
+                                  let next = start - dy;
+                                  if (total > 0) {
+                                    const maxBottom = Math.max(MIN_BOTTOM, total - MIN_TOP - RESIZER);
+                                    next = Math.max(MIN_BOTTOM, Math.min(maxBottom, next));
+                                  } else {
+                                    next = Math.max(MIN_BOTTOM, next);
+                                  }
+                                  setStatesHeight(next);
+                                };
+                                const onUp = () => {
+                                  window.removeEventListener('mousemove', onMove);
+                                  window.removeEventListener('mouseup', onUp);
+                                };
+                                window.addEventListener('mousemove', onMove);
+                                window.addEventListener('mouseup', onUp);
+                              }}
+                              aria-label="Resize layers/states panels"
+                            />
+                            <div className="min-h-[120px] overflow-auto" style={{ flex: `0 0 ${statesHeight}px` }}>
+                              <StatesPanel />
+                            </div>
+                          </div>
+                        );
+                      case 'inspector':
+                        return <Inspector />;
+                      case 'canvas':
+                        return <CanvasPreview />;
+                      default:
+                        return null;
+                    }
+                  };
+
+                  const content = (
+                    <div className="h-full w-full flex flex-col min-h-0">
+                      {col.items.map(itemId => (
+                        <div key={itemId} className="flex-1 min-h-0">
+                          {renderItem(itemId)}
                         </div>
+                      ))}
+                    </div>
+                  );
+
+                  return (
+                    <React.Fragment key={col.id}>
+                      <div
+                        className={cn(
+                          "min-h-0 flex flex-col overflow-hidden",
+                          col.flex ? "flex-1 min-w-[100px]" : "flex-none"
+                        )}
+                        style={{ width: col.flex ? undefined : col.width }}
+                      >
+                        {content}
+                      </div>
+
+                      {!isLast && (
                         <div
-                          className="relative w-full h-2 cursor-row-resize flex-shrink-0"
+                          className="relative w-1 -mx-2.5 h-full cursor-col-resize flex-shrink-0 z-10 hover:bg-primary/20 transition-colors"
                           onMouseDown={(e) => {
                             e.preventDefault();
-                            const startY = e.clientY;
-                            const start = statesHeight;
-                            const RESIZER = 2;
-                            const MIN_TOP = 140;
-                            const MIN_BOTTOM = 120;
-                            const paneEl = leftPaneRef.current;
-                            const total = paneEl ? paneEl.getBoundingClientRect().height : 0;
+                            const startX = e.clientX;
+
+                            const nextCol = layout[index + 1];
+                            const targetIndex = col.flex ? index + 1 : index;
+                            const isNext = col.flex;
+                            const startWidth = layout[targetIndex].width;
+
                             const onMove = (ev: MouseEvent) => {
-                              const dy = ev.clientY - startY;
-                              let next = start - dy;
-                              if (total > 0) {
-                                const maxBottom = Math.max(MIN_BOTTOM, total - MIN_TOP - RESIZER);
-                                next = Math.max(MIN_BOTTOM, Math.min(maxBottom, next));
-                              } else {
-                                next = Math.max(MIN_BOTTOM, next);
-                              }
-                              setStatesHeight(next);
+                              const dx = ev.clientX - startX;
+                              const delta = isNext ? -dx : dx;
+                              const nextWidth = Math.max(100, Math.min(800, startWidth + delta));
+
+                              setLayout(prev => {
+                                const nextLayout = [...prev];
+                                if (nextLayout[targetIndex]) {
+                                  nextLayout[targetIndex] = { ...nextLayout[targetIndex], width: nextWidth };
+                                }
+                                return nextLayout;
+                              });
                             };
                             const onUp = () => {
                               window.removeEventListener('mousemove', onMove);
@@ -240,68 +316,11 @@ export default function EditorPage() {
                             window.addEventListener('mousemove', onMove);
                             window.addEventListener('mouseup', onUp);
                           }}
-                          aria-label="Resize layers/states panels"
                         />
-                        <div className="min-h-[120px] overflow-auto" style={{ flex: `0 0 ${statesHeight}px` }}>
-                          <StatesPanel />
-                        </div>
-                      </div>
-                    </div>
-                    <div
-                      className="relative w-2 mx-0 h-full self-stretch cursor-col-resize flex-shrink-0"
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        const startX = e.clientX;
-                        const start = leftWidth;
-                        const onMove = (ev: MouseEvent) => {
-                          const dx = ev.clientX - startX;
-                          const next = Math.max(240, Math.min(560, start + dx));
-                          setLeftWidth(next);
-                        };
-                        const onUp = () => {
-                          window.removeEventListener('mousemove', onMove);
-                          window.removeEventListener('mouseup', onUp);
-                        };
-                        window.addEventListener('mousemove', onMove);
-                        window.addEventListener('mouseup', onUp);
-                      }}
-                      aria-label="Resize left column"
-                    />
-                  </>
-                )}
-
-                <div className="min-h-0 flex-1">
-                  <CanvasPreview />
-                </div>
-
-                {showRight && (
-                  <>
-                    <div
-                      className="relative w-2 mx-0 h-full self-stretch cursor-col-resize flex-shrink-0"
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        const startX = e.clientX;
-                        const start = rightWidth;
-                        const onMove = (ev: MouseEvent) => {
-                          const dx = startX - ev.clientX;
-                          const next = Math.max(260, Math.min(560, start + dx));
-                          setRightWidth(next);
-                        };
-                        const onUp = () => {
-                          window.removeEventListener('mousemove', onMove);
-                          window.removeEventListener('mouseup', onUp);
-                        };
-                        window.addEventListener('mousemove', onMove);
-                        window.addEventListener('mouseup', onUp);
-                      }}
-                      aria-label="Resize right column"
-                    />
-
-                    <div className="min-h-0 flex-shrink-0" style={{ width: rightWidth }}>
-                      <Inspector />
-                    </div>
-                  </>
-                )}
+                      )}
+                    </React.Fragment>
+                  );
+                })}
               </div>
             )}
           </div>

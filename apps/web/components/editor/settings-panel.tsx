@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { X } from "lucide-react";
+import { X, PanelRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocalStorage } from "@/hooks/use-local-storage";
+import { PanelLayoutEditor } from "./panel-layout-editor";
 
 export type SettingsPanelProps = {
   open: boolean;
@@ -52,6 +53,7 @@ export function SettingsPanel({
   const [showGeometryResize, setShowGeometryResize] = useLocalStorage<boolean>("caplay_settings_show_geometry_resize", false);
   const [showAlignButtons, setShowAlignButtons] = useLocalStorage<boolean>("caplay_settings_show_align_buttons", false);
   const [uiDensity, setUiDensity] = useLocalStorage<'default' | 'compact'>("caplay_settings_ui_density", 'default');
+  const [isLayoutEditorOpen, setIsLayoutEditorOpen] = useState(false);
 
 
   useEffect(() => setMounted(true), []);
@@ -73,6 +75,12 @@ export function SettingsPanel({
       return () => clearTimeout(timeout);
     }
   }, [open, shouldRender]);
+
+  useEffect(() => {
+    if (!open) {
+      setIsLayoutEditorOpen(false);
+    }
+  }, [open]);
 
   useEffect(() => {
     if (!mounted) return;
@@ -295,15 +303,26 @@ export function SettingsPanel({
                 <span>States panel height</span>
                 <span className="font-mono text-muted-foreground text-xs">{statesHeight ?? '—'} px</span>
               </div>
-              <div className="pt-2">
+              <div className="pt-2 flex flex-col gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   className="w-full"
+                  onClick={() => setIsLayoutEditorOpen(true)}
+                >
+                  <PanelRight className="mr-2 h-4 w-4" />
+                  Edit Panel Layout
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-muted-foreground"
                   onClick={() => {
                     setLeftWidth?.(320);
                     setRightWidth?.(400);
                     setStatesHeight?.(350);
+                    localStorage.removeItem("caplay_editor_layout");
+                    if (typeof window !== 'undefined') window.location.reload();
                   }}
                 >
                   Reset to defaults
@@ -311,6 +330,14 @@ export function SettingsPanel({
               </div>
             </div>
           </div>
+
+          <PanelLayoutEditor
+            open={isLayoutEditorOpen}
+            onClose={(apply?: boolean) => {
+              setIsLayoutEditorOpen(false);
+              if (apply) onClose();
+            }}
+          />
 
           {/* Other */}
           <div className="space-y-4">
