@@ -13,6 +13,7 @@ dist/
 
 # production
 /build
+/artifacts
 
 # debug
 npm-debug.log*

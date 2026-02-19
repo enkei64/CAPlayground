@@ -5,6 +5,7 @@
 /build
 /dist
 /cef
+/artifacts
 /*.so
 /*.json
 !package.json
@@ -13,3 +14,4 @@
 
 # static views (copied from apps/web/out)
 /views/app
+/views/**/*.html.txt

@@ -3,9 +3,10 @@
     "version": "1.0.0",
     "private": true,
     "scripts": {
+        "dev": "bun ./scripts/preBuild.ts && bun x electrobun build && electrobun dev",
         "start": "electrobun dev",
-        "build": "electrobun build --env=stable",
-        "build:canary": "electrobun build --env=canary"
+        "dist": "bun ./scripts/preBuild.ts && electrobun build --env=stable",
+        "build:canary": "bun ./scripts/preBuild.ts && electrobun build --env=canary"
     },
     "dependencies": {
         "electrobun": "latest"
