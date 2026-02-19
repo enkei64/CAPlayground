@@ -197,7 +197,12 @@ export function WallpapersGrid({ data }: { data: WallpapersResponse }) {
           await putTextFile(id, `${folder}/Background.ca/assetManifest.caml`, assetManifest)
         }
       }
-      router.push(`/editor/${id}`)
+      localStorage.setItem('caplayground_last_editor_id', id);
+      if (process.env.NEXT_PUBLIC_DESKTOP === 'true') {
+        window.location.href = 'editor.html';
+      } else {
+        router.push(`/editor`);
+      }
     } catch (err) {
       console.error('Failed to open wallpaper in editor', err)
       alert(`Failed to open wallpaper in editor: ${err instanceof Error ? err.message : 'Unknown error'}`)

@@ -64,7 +64,7 @@ async function opfs_listProjects(): Promise<StorageProject[]> {
     try {
       const m = JSON.parse(metaText) as StorageProject;
       out.push(m);
-    } catch {}
+    } catch { }
   }
   return out.sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
 }

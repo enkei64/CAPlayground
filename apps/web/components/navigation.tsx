@@ -4,9 +4,12 @@ import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Sun, Moon, ArrowRight, User, LogOut, LayoutDashboard } from "lucide-react"
+import { Menu, X, Sun, Moon, ArrowRight, User, LogOut, LayoutDashboard, Minus, Square, X as XIcon } from "lucide-react"
 import { useTheme } from "next-themes"
+
+const IS_DESKTOP = process.env.NEXT_PUBLIC_DESKTOP === "true";
 import { getSupabaseBrowserClient } from "@/lib/supabase"
+import { bunMessage } from "@/lib/fs"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +25,13 @@ export function Navigation() {
   const { theme, setTheme } = useTheme()
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [mounted, setMounted] = useState(false)
+
+  const [desktopPlatform, setDesktopPlatform] = useState<string>("unknown");
+  useEffect(() => {
+    if (!IS_DESKTOP) return;
+    const p = (window as any).__electrobun?.platform || document.documentElement.getAttribute("data-desktop-platform") || "linux";
+    setDesktopPlatform(p);
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -84,6 +94,10 @@ export function Navigation() {
     }
   }, [])
 
+  const handleWindowClose = () => bunMessage('closeWindow');
+  const handleWindowMinimize = () => bunMessage('minimizeWindow');
+  const handleWindowMaximize = () => bunMessage('maximizeWindow');
+
 
   return (
     <nav
@@ -98,9 +112,9 @@ export function Navigation() {
           className={`w-full bg-background/80 backdrop-blur-md transition-all duration-300 ease-in-out ${scrolled
             ? "rounded-2xl border border-border shadow-md"
             : "rounded-none border-b border-transparent shadow-none"
-            }`}
+            } ${IS_DESKTOP ? 'electrobun-webkit-app-region-drag' : ''}`}
         >
-          <div className="grid [grid-template-columns:auto_1fr_auto] h-14 items-center px-4 min-[1045px]:px-6">
+          <div className={`grid [grid-template-columns:auto_1fr_auto] h-14 items-center ${IS_DESKTOP && desktopPlatform === 'darwin' ? 'pl-[78px] pr-4' : 'px-4'} min-[1045px]:px-6`}>
             {/* Logo and App Name */}
             <div className="flex items-center space-x-3 justify-self-start">
               {/* light icon */}
@@ -122,7 +136,7 @@ export function Navigation() {
               />
               <Link
                 href="/"
-                className="font-helvetica-neue text-xl font-bold text-foreground hover:text-accent transition-colors"
+                className={`font-helvetica-neue text-xl font-bold text-foreground hover:text-accent transition-colors ${IS_DESKTOP ? 'electrobun-webkit-app-region-no-drag' : ''}`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 CAPlayground
@@ -130,7 +144,7 @@ export function Navigation() {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden min-[1045px]:flex items-center justify-center gap-6 justify-self-center">
+            <div className={`hidden min-[1045px]:flex items-center justify-center gap-6 justify-self-center ${IS_DESKTOP ? 'electrobun-webkit-app-region-no-drag' : ''}`}>
               <Link href="/docs" className="text-foreground hover:text-accent transition-colors">
                 Docs
               </Link>
@@ -201,6 +215,33 @@ export function Navigation() {
                   <Moon className="h-5 w-5" />
                 )}
               </Button>
+
+              {/* Desktop window controls for Windows/Linux */}
+              {IS_DESKTOP && desktopPlatform !== 'darwin' && (
+                <div className="flex items-center ml-2 -mr-1 electrobun-webkit-app-region-no-drag">
+                  <button
+                    onClick={handleWindowMinimize}
+                    className="h-8 w-10 flex items-center justify-center hover:bg-muted/80 transition-colors rounded-sm"
+                    aria-label="Minimize"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={handleWindowMaximize}
+                    className="h-8 w-10 flex items-center justify-center hover:bg-muted/80 transition-colors rounded-sm"
+                    aria-label="Maximize"
+                  >
+                    <Square className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={handleWindowClose}
+                    className="h-8 w-10 flex items-center justify-center hover:bg-destructive/80 hover:text-destructive-foreground transition-colors rounded-sm"
+                    aria-label="Close"
+                  >
+                    <XIcon className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Mobile Menu Button */}

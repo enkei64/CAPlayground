@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { Favicon } from "@/components/favicon"
 import UnofficialDomainBanner from "@/components/unofficial-domain-banner"
 import { PostHogProvider } from "@/components/posthog-provider"
+import { DesktopSetup } from "@/components/desktop-setup"
 
 const sourceSans = Source_Sans_3({
   subsets: ["latin"],
@@ -58,6 +59,7 @@ export default function RootLayout({
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
             <UnofficialDomainBanner />
             <Favicon />
+            <DesktopSetup />
             {children}
           </ThemeProvider>
         </PostHogProvider>

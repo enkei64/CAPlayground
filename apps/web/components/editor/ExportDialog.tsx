@@ -223,9 +223,10 @@ export function ExportDialog() {
       const nameSafe = baseName.replace(/[^a-z0-9\-_]+/gi, "-");
       const isGyro = doc.meta.gyroEnabled ?? false;
 
-      const templateEndpoint = isGyro
-        ? "/api/templates/gyro-tendies"
-        : "/api/templates/tendies";
+      const templateEndpoint = process.env.NEXT_PUBLIC_DESKTOP === 'true'
+        ? (isGyro ? "/templates/gyro-tendies.zip" : "/templates/tendies.zip")
+        : (isGyro ? "/api/templates/gyro-tendies" : "/api/templates/tendies");
+
       const templateResponse = await fetch(templateEndpoint, {
         method: "GET",
         headers: {
@@ -378,8 +379,8 @@ export function ExportDialog() {
         <DialogContent className="sm:max-w-md p-4">
           <DialogHeader
             className={`${exportView === "success"
-                ? "flex items-center justify-start py-1"
-                : "py-2"
+              ? "flex items-center justify-start py-1"
+              : "py-2"
               }`}
           >
             {exportView === "success" ? (

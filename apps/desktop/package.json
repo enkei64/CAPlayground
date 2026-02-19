@@ -1,0 +1,13 @@
+{
+    "name": "caplayground-desktop",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "start": "electrobun dev",
+        "build": "electrobun build --env=stable",
+        "build:canary": "electrobun build --env=canary"
+    },
+    "dependencies": {
+        "electrobun": "latest"
+    }
+}

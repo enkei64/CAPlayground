@@ -31,12 +31,12 @@ type DeviceSpec = { name: string; width: number; height: number; category?: stri
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import type { AnyLayer, CAProject, CAAsset, ImageLayer } from "@/lib/ca/types";
 type DualCABundle = {
-  project: { width: number; height: number; geometryFlipped: 0|1 };
+  project: { width: number; height: number; geometryFlipped: 0 | 1 };
   floating: { root: AnyLayer; assets?: Record<string, CAAsset>; states?: string[]; stateOverrides?: any; stateTransitions?: any };
   background: { root: AnyLayer; assets?: Record<string, CAAsset>; states?: string[]; stateOverrides?: any; stateTransitions?: any };
 };
 type TendiesBundle = {
-  project: { width: number; height: number; geometryFlipped: 0|1 };
+  project: { width: number; height: number; geometryFlipped: 0 | 1 };
   floating?: { root: AnyLayer; assets?: Record<string, CAAsset>; states?: string[]; stateOverrides?: any; stateTransitions?: any };
   background?: { root: AnyLayer; assets?: Record<string, CAAsset>; states?: string[]; stateOverrides?: any; stateTransitions?: any };
   wallpaper?: { root: AnyLayer; assets?: Record<string, CAAsset>; states?: string[]; stateOverrides?: any; stateTransitions?: any };
@@ -69,7 +69,7 @@ const ProjectThumb = React.memo(function ProjectThumb({
   background,
   freeze = false,
 }: {
-  doc?: { meta: Pick<CAProject, 'width'|'height'|'background'>; layers: AnyLayer[] },
+  doc?: { meta: Pick<CAProject, 'width' | 'height' | 'background'>; layers: AnyLayer[] },
   width: number,
   height: number,
   background: string,
@@ -160,9 +160,9 @@ const ProjectThumb = React.memo(function ProjectThumb({
     if (l.type === 'text') {
       const t = l as any;
       return <div key={`${l.id}-${layerPath}`} style={{ ...common, color: t.color, fontSize: t.fontSize, textAlign: t.align ?? 'left' }}>
-          {t.text}
-          {renderChildren(l, l.size.h, useYUp, layerPath)}
-        </div>;
+        {t.text}
+        {renderChildren(l, l.size.h, useYUp, layerPath)}
+      </div>;
     }
     if (l.type === 'image') {
       const im = l as any;
@@ -175,7 +175,7 @@ const ProjectThumb = React.memo(function ProjectThumb({
       const startY = (grad.startPoint?.y ?? 0) * 100;
       const endX = (grad.endPoint?.x ?? 1) * 100;
       const endY = (grad.endPoint?.y ?? 1) * 100;
-      
+
       const colors = (grad.colors || []).map((c: any) => {
         const opacity = c.opacity ?? 1;
         const hex = c.color || '#000000';
@@ -184,10 +184,10 @@ const ProjectThumb = React.memo(function ProjectThumb({
         const b = parseInt(hex.slice(5, 7), 16);
         return `rgba(${r}, ${g}, ${b}, ${opacity})`;
       }).join(', ');
-      
+
       let background = '';
       const isSamePoint = Math.abs(startX - endX) < 0.01 && Math.abs(startY - endY) < 0.01;
-      
+
       if (isSamePoint) {
         const firstColor = (grad.colors || [])[0];
         if (firstColor) {
@@ -211,7 +211,7 @@ const ProjectThumb = React.memo(function ProjectThumb({
         const angle = Math.atan2(dy, dx) + Math.PI / 2;
         background = `conic-gradient(from ${angle}rad at ${startX}% ${100 - startY}%, ${colors})`;
       }
-      
+
       return <div key={`${l.id}-${layerPath}`} style={{ ...common, background }}>
         {renderChildren(l, l.size.h, useYUp, layerPath)}
       </div>;
@@ -308,7 +308,7 @@ function ProjectsContent() {
   const [isTosOpen, setIsTosOpen] = useState(false);
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [previews, setPreviews] = useState<Record<string, { bg: string; width?: number; height?: number }>>({});
-  const [thumbDocs, setThumbDocs] = useState<Record<string, { meta: Pick<CAProject, 'id'|'name'|'width'|'height'|'background'>; layers: AnyLayer[] }>>({});
+  const [thumbDocs, setThumbDocs] = useState<Record<string, { meta: Pick<CAProject, 'id' | 'name' | 'width' | 'height' | 'background'>; layers: AnyLayer[] }>>({});
 
   const [query, setQuery] = useState("");
   const [dateFilter, setDateFilter] = useState<"all" | "7" | "30" | "year">("all");
@@ -361,7 +361,7 @@ function ProjectsContent() {
       const { getSupabaseBrowserClient } = await import("@/lib/supabase");
       const supabase = getSupabaseBrowserClient();
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (!session) {
         setCloudProjects([]);
         return;
@@ -377,15 +377,15 @@ function ProjectsContent() {
         const data = await response.json();
 
         const syncData = JSON.parse(localStorage.getItem('caplayground-sync') || '{}');
-        
+
         const cloudProjs = (data.files || []).map((file: any) => {
           const projectEntry = Object.entries(syncData).find(
             ([_, meta]: [string, any]) => meta.driveFileId === file.id
           );
-          
+
           const projectId = projectEntry ? projectEntry[0] : null;
           const projectName = file.name.replace('.ca.zip', '');
-          
+
           return {
             id: projectId || file.id,
             name: projectName,
@@ -395,7 +395,7 @@ function ProjectsContent() {
             isCloudOnly: !projectId
           };
         });
-        
+
         setCloudProjects(cloudProjs);
         setCloudFetched(true);
       }
@@ -413,17 +413,17 @@ function ProjectsContent() {
     projectsArray.forEach(localProj => {
       const cloudProj = cloudProjects.find(cp => cp.id === localProj.id);
       const sync = syncStatus[localProj.id];
-      
+
       let storageLocation = 'Device';
       let needsSync = false;
-      
+
       if (cloudProj) {
         storageLocation = 'Device and Cloud';
         if (sync && sync.lastModifiedAt && sync.lastSyncedAt) {
           needsSync = new Date(sync.lastModifiedAt) > new Date(sync.lastSyncedAt);
         }
       }
-      
+
       merged.push({
         ...localProj,
         storageLocation,
@@ -473,7 +473,7 @@ function ProjectsContent() {
         try {
           const using = await isUsingOPFS();
           setStorageFallback(!using);
-        } catch {}
+        } catch { }
 
         const ls = typeof window !== 'undefined' ? localStorage.getItem('caplayground-projects') : null;
         const list: Project[] = ls ? JSON.parse(ls) : [];
@@ -495,8 +495,8 @@ function ProjectsContent() {
           await createProject({ id: meta.id, name: meta.name, createdAt: meta.createdAt, width: meta.width!, height: meta.height! });
           const folder = `${meta.name}.ca`;
           let parsed: any = null;
-          try { parsed = raw ? JSON.parse(raw) : null; } catch {}
-          const fixedStates = ["Locked","Unlock","Sleep"] as const;
+          try { parsed = raw ? JSON.parse(raw) : null; } catch { }
+          const fixedStates = ["Locked", "Unlock", "Sleep"] as const;
           const prepare = (layers: any[] | undefined, states?: string[], stateOverrides?: any, stateTransitions?: any) => ({
             layers: Array.isArray(layers) ? layers : [],
             states: (states && states.length ? states : [...fixedStates]) as any,
@@ -513,7 +513,7 @@ function ProjectsContent() {
               floatingDoc = prepare(parsed.docs.floating?.layers, parsed.docs.floating?.states, parsed.docs.floating?.stateOverrides, parsed.docs.floating?.stateTransitions);
             }
           }
-          const writeCA = async (caKey: 'Background.ca'|'Floating.ca', doc: ReturnType<typeof prepare>) => {
+          const writeCA = async (caKey: 'Background.ca' | 'Floating.ca', doc: ReturnType<typeof prepare>) => {
             if (caKey === 'Background.ca') {
               const emptyCaml = `<?xml version="1.0" encoding="UTF-8"?><caml xmlns="http://www.apple.com/CoreAnimation/1.0"/>`;
               await putTextFile(meta.id, `${folder}/${caKey}/main.caml`, emptyCaml);
@@ -522,7 +522,7 @@ function ProjectsContent() {
                 id: meta.id,
                 name: meta.name,
                 type: 'basic',
-                position: { x: Math.round((meta.width || 0)/2), y: Math.round((meta.height || 0)/2) },
+                position: { x: Math.round((meta.width || 0) / 2), y: Math.round((meta.height || 0) / 2) },
                 size: { w: meta.width || 0, h: meta.height || 0 },
                 backgroundColor: '#e5e7eb',
                 geometryFlipped: 0,
@@ -541,7 +541,7 @@ function ProjectsContent() {
               try {
                 const blob = await dataURLToBlob((info as any).dataURL);
                 await putBlobFile(meta.id, `${folder}/${caKey}/assets/${(info as any).filename}`, blob);
-              } catch {}
+              } catch { }
             }
           };
           await writeCA('Background.ca', backgroundDoc);
@@ -550,7 +550,7 @@ function ProjectsContent() {
         try {
           for (const p of list) localStorage.removeItem(`caplayground-project:${p.id}`);
           localStorage.removeItem('caplayground-projects');
-        } catch {}
+        } catch { }
         const idbList = await listProjects();
         setProjects(idbList.map(p => ({ id: p.id, name: p.name, createdAt: p.createdAt, width: p.width, height: p.height })));
       } catch {
@@ -579,8 +579,8 @@ function ProjectsContent() {
         <>
           {parts.map((p, i) => p.match
             ? <span key={i} className="bg-yellow-200/60 dark:bg-yellow-300/20 rounded px-0.5">
-                {p.str}
-              </span>
+              {p.str}
+            </span>
             : <span key={i}>{p.str}</span>
           )}
         </>
@@ -591,9 +591,10 @@ function ProjectsContent() {
   };
 
   const recordProjectCreated = () => {
+    if (process.env.NEXT_PUBLIC_DESKTOP === 'true') return;
     try {
-      fetch("/api/analytics/project-created", { method: "POST", keepalive: true }).catch(() => {})
-    } catch {}
+      fetch("/api/analytics/project-created", { method: "POST", keepalive: true }).catch(() => { })
+    } catch { }
   };
 
   useEffect(() => {
@@ -614,14 +615,14 @@ function ProjectsContent() {
         try {
           const accepted = localStorage.getItem("caplayground-tos-accepted") === "true";
           if (!accepted) setIsTosOpen(true);
-        } catch {}
+        } catch { }
       }
     })();
   }, []);
 
-  
 
-  
+
+
 
   const filteredProjects = useMemo(() => {
     const now = new Date();
@@ -702,7 +703,7 @@ function ProjectsContent() {
         if (need.length === 0) return;
 
         const nextPreviews = { ...previews } as Record<string, { bg: string; width?: number; height?: number }>;
-        const nextDocs = { ...thumbDocs } as Record<string, { meta: Pick<CAProject,'id'|'name'|'width'|'height'|'background'>; layers: AnyLayer[] }>;
+        const nextDocs = { ...thumbDocs } as Record<string, { meta: Pick<CAProject, 'id' | 'name' | 'width' | 'height' | 'background'>; layers: AnyLayer[] }>;
 
         for (const p of need) {
           const folder = `${p.name}.ca`;
@@ -730,7 +731,7 @@ function ProjectsContent() {
                 if (typeof root.backgroundColor === 'string') bg = root.backgroundColor;
                 layers = root.children?.length ? root.children : [root];
               }
-            } catch {}
+            } catch { }
           }
           const toDataURL = async (buf: ArrayBuffer): Promise<string> => {
             return await new Promise((resolve) => {
@@ -749,7 +750,7 @@ function ProjectsContent() {
                 const backgroundLayers = root.children?.length ? root.children : [root];
                 layers = [...backgroundLayers, ...layers];
               }
-            } catch {}
+            } catch { }
           }
           const filenameToDataURL: Record<string, string> = {};
           const assetFiles = [...floating, ...background, ...wallpaper].filter(f => /\/assets\//.test(f.path) && f.type === 'blob');
@@ -757,7 +758,7 @@ function ProjectsContent() {
             const filename = f.path.split('/assets/')[1];
             try {
               filenameToDataURL[filename] = await toDataURL(f.data as ArrayBuffer);
-            } catch {}
+            } catch { }
           }
           const applyAssetSrc = (arr: AnyLayer[]): AnyLayer[] => arr.map((l) => {
             let newL: AnyLayer | undefined = { ...l };
@@ -781,7 +782,7 @@ function ProjectsContent() {
 
         setPreviews(nextPreviews);
         setThumbDocs(nextDocs);
-      } catch {}
+      } catch { }
     })();
   }, [filteredProjects, visibleCount, previews, thumbDocs]);
 
@@ -804,7 +805,7 @@ function ProjectsContent() {
   const createProjectFromDialog = async () => {
     const name = newProjectName.trim();
     if (!name) return;
-    
+
     let w: number, h: number;
     if (useDeviceSelector) {
       if (!devicesRef.current) {
@@ -830,6 +831,14 @@ function ProjectsContent() {
     const idbList = await listProjects();
     setProjects(idbList.map(p => ({ id: p.id, name: p.name, createdAt: p.createdAt, width: p.width, height: p.height })));
     recordProjectCreated();
+
+    localStorage.setItem('caplayground_last_editor_id', id);
+    if (process.env.NEXT_PUBLIC_DESKTOP === 'true') {
+      window.location.href = 'editor.html';
+    } else {
+      router.push(`/editor`);
+    }
+
     setNewProjectName("");
     setRootWidth(390);
     setRootHeight(844);
@@ -854,7 +863,7 @@ function ProjectsContent() {
       const idbList = await listProjects();
       setProjects(idbList.map(p => ({ id: p.id, name: p.name, createdAt: p.createdAt, width: p.width, height: p.height })));
     }
-    
+
     setEditingProjectId(null);
     setEditingName("");
     setIsRenameOpen(false);
@@ -864,7 +873,7 @@ function ProjectsContent() {
     await deleteProject(id);
     const idbList = await listProjects();
     setProjects(idbList.map(p => ({ id: p.id, name: p.name, createdAt: p.createdAt, width: p.width, height: p.height })));
-    
+
     setPreviews(prev => {
       const next = { ...prev };
       delete next[id];
@@ -879,10 +888,10 @@ function ProjectsContent() {
   };
 
   const confirmDelete = (projectOrId: any) => {
-    const project = typeof projectOrId === 'string' 
+    const project = typeof projectOrId === 'string'
       ? mergedProjects.find(p => p.id === projectOrId)
       : projectOrId;
-    
+
     if (!project) return;
 
     if (project.storageLocation === 'Device and Cloud') {
@@ -898,19 +907,19 @@ function ProjectsContent() {
 
   const performDeleteWithOptions = async () => {
     if (!projectToDelete) return;
-    
+
     try {
       if (deleteFromDevice) {
         await deleteProject(projectToDelete.id);
         const idbList = await listProjects();
         setProjects(idbList.map(p => ({ id: p.id, name: p.name, createdAt: p.createdAt, width: p.width, height: p.height })));
       }
-      
+
       if (deleteFromCloud && projectToDelete.driveFileId) {
         const { getSupabaseBrowserClient } = await import("@/lib/supabase");
         const supabase = getSupabaseBrowserClient();
         const { data: { session } } = await supabase.auth.getSession();
-        
+
         if (session) {
           try {
             const response = await fetch('/api/drive/delete', {
@@ -921,12 +930,12 @@ function ProjectsContent() {
               },
               body: JSON.stringify({ fileId: projectToDelete.driveFileId })
             });
-            
+
             if (response.ok) {
               const syncData = JSON.parse(localStorage.getItem('caplayground-sync') || '{}');
               delete syncData[projectToDelete.id];
               localStorage.setItem('caplayground-sync', JSON.stringify(syncData));
-              
+
               setCloudFetched(false);
               fetchCloudProjects();
             }
@@ -935,7 +944,7 @@ function ProjectsContent() {
           }
         }
       }
-      
+
       setDeleteOptionsOpen(false);
       setProjectToDelete(null);
       setDeleteFromDevice(true);
@@ -961,7 +970,7 @@ function ProjectsContent() {
 
   const syncProjects = async (projectIds: string[]) => {
     if (projectIds.length === 0) return;
-    
+
     try {
       setIsSyncing(true);
       setSyncProgress({ current: 0, total: projectIds.length, projectName: '' });
@@ -969,7 +978,7 @@ function ProjectsContent() {
       const { getSupabaseBrowserClient } = await import("@/lib/supabase");
       const supabase = getSupabaseBrowserClient();
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (!session) {
         setSyncResultMessage('Please sign in to sync to Google Drive');
         setSyncResultOpen(true);
@@ -990,9 +999,9 @@ function ProjectsContent() {
 
           const folderName = `${project.name}.ca`;
           const files = await listFiles(projectId, folderName);
-          
+
           const zip = new JSZip();
-          
+
           zip.file('metadata.json', JSON.stringify({
             id: project.id,
             name: project.name,
@@ -1012,7 +1021,7 @@ function ProjectsContent() {
           }
 
           const zipBase64 = await zip.generateAsync({ type: 'base64' });
-          
+
           projectsData.push({
             id: projectId,
             name: project.name,
@@ -1050,10 +1059,10 @@ function ProjectsContent() {
       if (data.results && Array.isArray(data.results)) {
         const syncData = JSON.parse(localStorage.getItem('caplayground-sync') || '{}');
         const now = new Date().toISOString();
-        
+
         let updatedCount = 0;
         let createdCount = 0;
-        
+
         for (const result of data.results) {
           if (result.success && result.projectId && result.fileId) {
             syncData[result.projectId] = {
@@ -1062,7 +1071,7 @@ function ProjectsContent() {
               lastModifiedAt: now,
               fileName: result.fileName
             };
-            
+
             if (result.updated) {
               updatedCount++;
             } else {
@@ -1071,7 +1080,7 @@ function ProjectsContent() {
           }
         }
         localStorage.setItem('caplayground-sync', JSON.stringify(syncData));
-        
+
         let message = '';
         if (updatedCount > 0 && createdCount > 0) {
           message = `Updated ${updatedCount} and uploaded ${createdCount} new project${createdCount > 1 ? 's' : ''} to Google Drive!`;
@@ -1082,14 +1091,14 @@ function ProjectsContent() {
         } else {
           message = `Successfully synced ${data.uploaded} of ${data.total} project${data.total > 1 ? 's' : ''} to Google Drive!`;
         }
-        
+
         setSyncResultMessage(message);
       } else {
         setSyncResultMessage(`Successfully synced ${data.uploaded} of ${data.total} project${data.total > 1 ? 's' : ''} to Google Drive!`);
       }
-      
+
       setSyncResultOpen(true);
-      
+
       setCloudFetched(false);
       fetchCloudProjects();
 
@@ -1119,16 +1128,16 @@ function ProjectsContent() {
         const { getSupabaseBrowserClient } = await import("@/lib/supabase");
         const supabase = getSupabaseBrowserClient();
         const { data: { session } } = await supabase.auth.getSession();
-        
+
         if (!session) {
           setSyncResultMessage('Please sign in to access cloud projects');
           setSyncResultOpen(true);
           return;
         }
-        
+
         setIsSyncing(true);
         setSyncProgress({ current: 0, total: 1, projectName: 'Downloading...' });
-        
+
         const response = await fetch('/api/drive/download', {
           method: 'POST',
           headers: {
@@ -1137,21 +1146,21 @@ function ProjectsContent() {
           },
           body: JSON.stringify({ fileId: project.driveFileId })
         });
-        
+
         const data = await response.json();
         if (!response.ok) throw new Error(data.error);
-        
+
         const JSZip = (await import('jszip')).default;
         const { createProject, putTextFile, putBlobFile } = await import('@/lib/storage');
-        
+
         const zipBuffer = Uint8Array.from(atob(data.zipData), c => c.charCodeAt(0));
         const zip = await JSZip.loadAsync(zipBuffer);
         const metadataFile = zip.file('metadata.json');
         if (!metadataFile) throw new Error('Invalid project file');
-        
+
         const metadataText = await metadataFile.async('text');
         const metadata = JSON.parse(metadataText);
-        
+
         await createProject({
           id: metadata.id,
           name: metadata.name,
@@ -1159,7 +1168,7 @@ function ProjectsContent() {
           height: metadata.height,
           createdAt: metadata.createdAt
         });
-        
+
         const folderName = `${metadata.name}.ca`;
         await Promise.all(
           Object.keys(zip.files).map(async (relativePath) => {
@@ -1176,7 +1185,7 @@ function ProjectsContent() {
             }
           })
         );
-        
+
         const syncData = JSON.parse(localStorage.getItem('caplayground-sync') || '{}');
         syncData[metadata.id] = {
           driveFileId: project.driveFileId,
@@ -1184,16 +1193,26 @@ function ProjectsContent() {
           lastModifiedAt: new Date().toISOString()
         };
         localStorage.setItem('caplayground-sync', JSON.stringify(syncData));
-        
+
         setIsSyncing(false);
-        router.push(`/editor/${metadata.id}`);
+        localStorage.setItem('caplayground_last_editor_id', metadata.id);
+        if (process.env.NEXT_PUBLIC_DESKTOP === 'true') {
+          window.location.href = 'editor.html';
+        } else {
+          router.push(`/editor`);
+        }
       } catch (error: any) {
         setIsSyncing(false);
         setSyncResultMessage(`Failed to download: ${error.message}`);
         setSyncResultOpen(true);
       }
     } else {
-      router.push(`/editor/${project.id}`);
+      localStorage.setItem('caplayground_last_editor_id', project.id);
+      if (process.env.NEXT_PUBLIC_DESKTOP === 'true') {
+        window.location.href = 'editor.html';
+      } else {
+        router.push(`/editor`);
+      }
     }
   };
 
@@ -1276,7 +1295,7 @@ function ProjectsContent() {
         try {
           const data = asset.data instanceof Blob ? asset.data : new Blob([asset.data as ArrayBuffer]);
           await putBlobFile(id, `${folder}/Wallpaper.ca/assets/${filename}`, data);
-        } catch {}
+        } catch { }
       }
     } else {
       const floatingDoc = tendies.floating;
@@ -1291,7 +1310,7 @@ function ProjectsContent() {
           try {
             const data = asset.data instanceof Blob ? asset.data : new Blob([asset.data as ArrayBuffer]);
             await putBlobFile(id, `${folder}/Floating.ca/assets/${filename}`, data);
-          } catch {}
+          } catch { }
         }
       } else {
         const emptyFloatingCaml = `<?xml version="1.0" encoding="UTF-8"?><caml xmlns="http://www.apple.com/CoreAnimation/1.0"/>`;
@@ -1311,7 +1330,7 @@ function ProjectsContent() {
           try {
             const data = asset.data instanceof Blob ? asset.data : new Blob([asset.data as ArrayBuffer]);
             await putBlobFile(id, `${folder}/Background.ca/assets/${filename}`, data);
-          } catch {}
+          } catch { }
         }
       } else {
         const emptyBackgroundCaml = `<?xml version="1.0" encoding="UTF-8"?><caml xmlns="http://www.apple.com/CoreAnimation/1.0"/>`;
@@ -1324,7 +1343,12 @@ function ProjectsContent() {
     const idbList = await listProjects();
     setProjects(idbList.map(p => ({ id: p.id, name: p.name, createdAt: p.createdAt, width: p.width, height: p.height })));
     recordProjectCreated();
-    router.push(`/editor/${id}`);
+    localStorage.setItem('caplayground_last_editor_id', id);
+    if (process.env.NEXT_PUBLIC_DESKTOP === 'true') {
+      window.location.href = 'editor.html';
+    } else {
+      router.push(`/editor`);
+    }
   };
 
   const handleImportChange: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
@@ -1368,18 +1392,18 @@ function ProjectsContent() {
       const assetManifest = `<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n<caml xmlns=\"http://www.apple.com/CoreAnimation/1.0\">\n  <MicaAssetManifest>\n    <modules type=\"NSArray\"/>\n  </MicaAssetManifest>\n</caml>`;
       const root = dual ? dual.floating.root : bundle.root;
       const gyroEnabled = root?.children?.some((child: AnyLayer) => ['BACKGROUND', 'FLOATING'].includes(child.name)) ?? false;
-      await createProject({ id,name, createdAt: new Date().toISOString(), width, height, gyroEnabled });
-       
+      await createProject({ id, name, createdAt: new Date().toISOString(), width, height, gyroEnabled });
+
       const mkCaml = async (layers: AnyLayer[]) => {
         const { serializeCAML } = await import('@/lib/ca/serialize/serializeCAML');
         const group = {
           id,
           name: 'Root Layer',
           type: 'basic',
-          position: { x: Math.round((width||0)/2), y: Math.round((height||0)/2) },
-          size: { w: width||0, h: height||0 },
+          position: { x: Math.round((width || 0) / 2), y: Math.round((height || 0) / 2) },
+          size: { w: width || 0, h: height || 0 },
           backgroundColor: root?.backgroundColor ?? '#e5e7eb',
-          geometryFlipped: ((dual?.project.geometryFlipped) ?? (bundle?.project.geometryFlipped ?? 0)) as 0|1,
+          geometryFlipped: ((dual?.project.geometryFlipped) ?? (bundle?.project.geometryFlipped ?? 0)) as 0 | 1,
           children: layers,
         } as any;
         const states = (dual ? dual.floating.states : bundle.states) as any;
@@ -1388,7 +1412,7 @@ function ProjectsContent() {
         const wallpaperParallaxGroups = bundle?.wallpaperParallaxGroups;
         return serializeCAML(
           group,
-          { id, name, width, height, background: root?.backgroundColor ?? '#e5e7eb', geometryFlipped: ((dual?.project.geometryFlipped) ?? (bundle?.project.geometryFlipped ?? 0)) as 0|1 } as any,
+          { id, name, width, height, background: root?.backgroundColor ?? '#e5e7eb', geometryFlipped: ((dual?.project.geometryFlipped) ?? (bundle?.project.geometryFlipped ?? 0)) as 0 | 1 } as any,
           states,
           stateOverrides,
           stateTransitions,
@@ -1411,10 +1435,10 @@ function ProjectsContent() {
           id: `${id}-bg`,
           name: 'Root Layer',
           type: 'basic',
-          position: { x: Math.round((width||0)/2), y: Math.round((height||0)/2) },
-          size: { w: width||0, h: height||0 },
+          position: { x: Math.round((width || 0) / 2), y: Math.round((height || 0) / 2) },
+          size: { w: width || 0, h: height || 0 },
           backgroundColor: (bgRoot?.backgroundColor ?? '#e5e7eb'),
-          geometryFlipped: ((dual.project.geometryFlipped) as 0|1),
+          geometryFlipped: ((dual.project.geometryFlipped) as 0 | 1),
           children: bgLayers,
         } as any;
         const camlBackground = serializeCAML(bgGroup, { id, name, width, height, background: (bgRoot?.backgroundColor ?? '#e5e7eb'), geometryFlipped: dual.project.geometryFlipped } as any, dual.background.states as any, dual.background.stateOverrides as any, dual.background.stateTransitions as any);
@@ -1445,14 +1469,14 @@ function ProjectsContent() {
           try {
             const data = asset.data instanceof Blob ? asset.data : new Blob([asset.data as ArrayBuffer]);
             await putBlobFile(id, `${folder}/Floating.ca/assets/${filename}`, data);
-          } catch {}
+          } catch { }
         }
         const bgAssets = (dual.background.assets || {}) as Record<string, CAAsset>;
         for (const [filename, asset] of Object.entries(bgAssets)) {
           try {
             const data = asset.data instanceof Blob ? asset.data : new Blob([asset.data as ArrayBuffer]);
             await putBlobFile(id, `${folder}/Background.ca/assets/${filename}`, data);
-          } catch {}
+          } catch { }
         }
       } else if (bundle?.assets) {
         const assets = bundle.assets as Record<string, CAAsset>;
@@ -1460,14 +1484,19 @@ function ProjectsContent() {
           try {
             const data = asset.data instanceof Blob ? asset.data : new Blob([asset.data as ArrayBuffer]);
             await putBlobFile(id, `${folder}/${gyroEnabled ? 'Wallpaper' : 'Floating'}.ca/assets/${filename}`, data);
-          } catch {}
+          } catch { }
         }
       }
       const idbList = await listProjects();
       setProjects(idbList.map(p => ({ id: p.id, name: p.name, createdAt: p.createdAt, width: p.width, height: p.height })));
       recordProjectCreated();
 
-      router.push(`/editor/${id}`);
+      localStorage.setItem('caplayground_last_editor_id', id);
+      if (process.env.NEXT_PUBLIC_DESKTOP === 'true') {
+        window.location.href = 'editor.html';
+      } else {
+        router.push(`/editor`);
+      }
     } catch (err) {
       console.error('Import failed', err);
     } finally {
@@ -1479,10 +1508,10 @@ function ProjectsContent() {
     try {
       const file = e.target.files?.[0];
       if (!file) return;
-      
+
       const { unpackTendies } = await import('@/lib/ca/ca-file');
       const tendies = await unpackTendies(file);
-      
+
       const id = Date.now().toString();
       const fileName = file.name.replace(/\.(ca|tendies)$/i, '');
       const name = await ensureUniqueProjectName(fileName);
@@ -1492,9 +1521,9 @@ function ProjectsContent() {
       const folder = `${name}.ca`;
       const indexXml = `<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n<dict>\n  <key>rootDocument</key>\n  <string>main.caml</string>\n</dict>\n</plist>`;
       const assetManifest = `<?xml version="1.0" encoding="UTF-8"?>\n\n<caml xmlns="http://www.apple.com/CoreAnimation/1.0">\n  <MicaAssetManifest>\n    <modules type="NSArray"/>\n  </MicaAssetManifest>\n</caml>`;
-      
+
       const { serializeCAML } = await import('@/lib/ca/serialize/serializeCAML');
-      
+
       const mkCaml = async (doc: { root: AnyLayer; assets?: Record<string, CAAsset>; states?: string[]; stateOverrides?: any; stateTransitions?: any; wallpaperParallaxGroups?: any }, docName: string) => {
         const root = doc.root as any;
         const layers = Array.isArray(root.children) ? root.children : (root ? [root] : []);
@@ -1502,7 +1531,7 @@ function ProjectsContent() {
           id: `${id}-${docName}`,
           name: `Root Layer`,
           type: 'basic',
-          position: { x: Math.round(width/2), y: Math.round(height/2) },
+          position: { x: Math.round(width / 2), y: Math.round(height / 2) },
           size: { w: width, h: height },
           backgroundColor: root?.backgroundColor ?? '#e5e7eb',
           geometryFlipped: tendies.project.geometryFlipped,
@@ -1517,7 +1546,7 @@ function ProjectsContent() {
           doc.wallpaperParallaxGroups as any
         );
       };
-      
+
       if (tendies.wallpaper) {
         const camlWallpaper = await mkCaml(tendies.wallpaper, 'Wallpaper');
         await putTextFile(id, `${folder}/Wallpaper.ca/main.caml`, camlWallpaper);
@@ -1529,7 +1558,7 @@ function ProjectsContent() {
           try {
             const data = asset.data instanceof Blob ? asset.data : new Blob([asset.data as ArrayBuffer]);
             await putBlobFile(id, `${folder}/Wallpaper.ca/assets/${filename}`, data);
-          } catch {}
+          } catch { }
         }
       } else {
         const floatingDoc = tendies.floating;
@@ -1538,13 +1567,13 @@ function ProjectsContent() {
           await putTextFile(id, `${folder}/Floating.ca/main.caml`, camlFloating);
           await putTextFile(id, `${folder}/Floating.ca/index.xml`, indexXml);
           await putTextFile(id, `${folder}/Floating.ca/assetManifest.caml`, assetManifest);
-  
+
           const flAssets = (floatingDoc.assets || {}) as Record<string, CAAsset>;
           for (const [filename, asset] of Object.entries(flAssets)) {
             try {
               const data = asset.data instanceof Blob ? asset.data : new Blob([asset.data as ArrayBuffer]);
               await putBlobFile(id, `${folder}/Floating.ca/assets/${filename}`, data);
-            } catch {}
+            } catch { }
           }
         } else {
           const emptyFloatingCaml = `<?xml version="1.0" encoding="UTF-8"?><caml xmlns="http://www.apple.com/CoreAnimation/1.0"/>`;
@@ -1552,19 +1581,19 @@ function ProjectsContent() {
           await putTextFile(id, `${folder}/Floating.ca/index.xml`, indexXml);
           await putTextFile(id, `${folder}/Floating.ca/assetManifest.caml`, assetManifest);
         }
-        
+
         if (tendies.background) {
           const camlBackground = await mkCaml(tendies.background, 'Background');
           await putTextFile(id, `${folder}/Background.ca/main.caml`, camlBackground);
           await putTextFile(id, `${folder}/Background.ca/index.xml`, indexXml);
           await putTextFile(id, `${folder}/Background.ca/assetManifest.caml`, assetManifest);
-          
+
           const bgAssets = (tendies.background.assets || {}) as Record<string, CAAsset>;
           for (const [filename, asset] of Object.entries(bgAssets)) {
             try {
               const data = asset.data instanceof Blob ? asset.data : new Blob([asset.data as ArrayBuffer]);
               await putBlobFile(id, `${folder}/Background.ca/assets/${filename}`, data);
-            } catch {}
+            } catch { }
           }
         } else {
           const emptyBackgroundCaml = `<?xml version="1.0" encoding="UTF-8"?><caml xmlns="http://www.apple.com/CoreAnimation/1.0"/>`;
@@ -1573,16 +1602,21 @@ function ProjectsContent() {
           await putTextFile(id, `${folder}/Background.ca/assetManifest.caml`, assetManifest);
         }
       }
-      
+
       const idbList = await listProjects();
       setProjects(idbList.map(p => ({ id: p.id, name: p.name, createdAt: p.createdAt, width: p.width, height: p.height })));
       recordProjectCreated();
-      
-      router.push(`/editor/${id}`);
+
+      localStorage.setItem('caplayground_last_editor_id', id);
+      if (process.env.NEXT_PUBLIC_DESKTOP === 'true') {
+        window.location.href = 'editor.html';
+      } else {
+        router.push(`/editor`);
+      }
     } catch (err) {
       console.error('Tendies import failed', err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      
+
       if (errorMessage.includes('MERCURY_POSTER_NOT_SUPPORTED')) {
         setMessageDialogTitle('Mercury Poster Not Supported'); // mercury wallpapers are stored in system files, so they can't be imported into CAP
         setMessageDialogContent('Mercury Poster wallpapers cannot be imported into CAPlayground. These wallpapers store their assets in system files that cannot be modified or extracted.');
@@ -1601,25 +1635,25 @@ function ProjectsContent() {
     setDeleteFromCloud(false);
     setIsBulkDeleteOpen(true);
   };
-  
+
   const performBulkDelete = async () => {
     if (selectedIds.length === 0) return;
     if (!deleteFromDevice && !deleteFromCloud) return;
-    
+
     try {
       const selectedProjects = mergedProjects.filter(p => selectedIds.includes(p.id));
-      
+
       for (const project of selectedProjects) {
         if (deleteFromDevice) {
           await deleteProject(project.id);
         }
-        
+
         if (deleteFromCloud && project.driveFileId) {
           const { getSupabaseBrowserClient } = await import("@/lib/supabase");
           const supabase = getSupabaseBrowserClient();
           const { data: { session } } = await supabase.auth.getSession();
           if (!session) continue;
-          
+
           try {
             const response = await fetch('/api/drive/delete', {
               method: 'POST',
@@ -1629,7 +1663,7 @@ function ProjectsContent() {
               },
               body: JSON.stringify({ fileId: project.driveFileId })
             });
-            
+
             if (response.ok) {
               const syncData = JSON.parse(localStorage.getItem('caplayground-sync') || '{}');
               delete syncData[project.id];
@@ -1640,12 +1674,12 @@ function ProjectsContent() {
           }
         }
       }
-      
+
       if (deleteFromDevice) {
         const idbList = await listProjects();
         setProjects(idbList.map(p => ({ id: p.id, name: p.name, createdAt: p.createdAt, width: p.width, height: p.height })));
       }
-      
+
       if (deleteFromCloud) {
         await fetchCloudProjects();
       }
@@ -1905,29 +1939,29 @@ function ProjectsContent() {
                   autoFocus
                 />
               </div>
-              
+
               <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="device-selector" 
-                  checked={useDeviceSelector} 
+                <Checkbox
+                  id="device-selector"
+                  checked={useDeviceSelector}
                   onCheckedChange={(checked) => setUseDeviceSelector(!!checked)}
                 />
                 <Label htmlFor="device-selector" className="text-sm font-medium cursor-pointer">
                   Set bounds by device
                 </Label>
               </div>
-              
+
               <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="gyro-enabled" 
-                  checked={gyroEnabled} 
+                <Checkbox
+                  id="gyro-enabled"
+                  checked={gyroEnabled}
                   onCheckedChange={(checked) => setGyroEnabled(!!checked)}
                 />
                 <Label htmlFor="gyro-enabled" className="text-sm font-medium cursor-pointer">
                   [BETA] Enable Gyro (Parallax Effect)
                 </Label>
               </div>
-              
+
               {useDeviceSelector ? (
                 <div className="space-y-2">
                   <label className="text-sm font-medium" htmlFor="device-select">Device</label>
@@ -2004,7 +2038,7 @@ function ProjectsContent() {
             Your Projects ({filteredProjects.length}
             {query || dateFilter !== "all" ? ` of ${projectsArray.length}` : ""})
           </h2>
-          
+
           {projectsArray.length === 0 ? (
             <div className="text-center py-12">
               <Folder className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -2028,8 +2062,8 @@ function ProjectsContent() {
                 const pv = previews[project.id];
                 const doc = thumbDocs[project.id] ?? { meta: { width: pv?.width || project.width || 390, height: pv?.height || project.height || 844, background: pv?.bg || '#e5e7eb' }, layers: [] } as any;
                 return (
-                  <Card 
-                    key={project.id} 
+                  <Card
+                    key={project.id}
                     className={`relative p-0 ${isSelectMode && isSelected ? 'border-accent ring-2 ring-accent/30' : ''}`}
                     onClick={() => {
                       if (isSelectMode) {
@@ -2059,7 +2093,7 @@ function ProjectsContent() {
                         </AspectRatio>
                       </div>
                       <div className="flex items-start justify-between">
-                        <div 
+                        <div
                           className="flex-1 min-w-0 cursor-pointer select-none"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -2128,7 +2162,7 @@ function ProjectsContent() {
                                   Sync to Cloud
                                 </DropdownMenuItem>
                               )}
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 className="text-destructive focus:text-destructive"
                                 onClick={(e) => { e.stopPropagation(); confirmDelete(project); }}
                               >
@@ -2169,8 +2203,8 @@ function ProjectsContent() {
                 const pv = previews[project.id];
                 const doc = thumbDocs[project.id] ?? { meta: { width: pv?.width || project.width || 390, height: pv?.height || project.height || 844, background: pv?.bg || '#e5e7eb' }, layers: [] } as any;
                 return (
-                  <Card 
-                    key={project.id} 
+                  <Card
+                    key={project.id}
                     className={`relative p-0 ${isSelectMode && isSelected ? 'border-accent ring-2 ring-accent/30' : ''}`}
                     onClick={() => {
                       if (isSelectMode) {
@@ -2255,7 +2289,7 @@ function ProjectsContent() {
                                     Sync to Cloud
                                   </DropdownMenuItem>
                                 )}
-                                <DropdownMenuItem 
+                                <DropdownMenuItem
                                   className="text-destructive focus:text-destructive"
                                   onClick={(e) => { e.stopPropagation(); confirmDelete(project); }}
                                 >
@@ -2485,8 +2519,8 @@ function ProjectsContent() {
               </p>
               <div className="space-y-3">
                 <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="bulk-delete-device" 
+                  <Checkbox
+                    id="bulk-delete-device"
                     checked={deleteFromDevice}
                     onCheckedChange={(checked) => setDeleteFromDevice(!!checked)}
                   />
@@ -2496,8 +2530,8 @@ function ProjectsContent() {
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="bulk-delete-cloud" 
+                  <Checkbox
+                    id="bulk-delete-cloud"
                     checked={deleteFromCloud}
                     onCheckedChange={(checked) => setDeleteFromCloud(!!checked)}
                   />
@@ -2515,8 +2549,8 @@ function ProjectsContent() {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsBulkDeleteOpen(false)}>Cancel</Button>
-              <Button 
-                variant="destructive" 
+              <Button
+                variant="destructive"
                 onClick={performBulkDelete}
                 disabled={!deleteFromDevice && !deleteFromCloud}
               >
@@ -2527,7 +2561,7 @@ function ProjectsContent() {
         </Dialog>
 
         {/* Sync Progress Dialog */}
-        <Dialog open={isSyncing} onOpenChange={() => {}}>
+        <Dialog open={isSyncing} onOpenChange={() => { }}>
           <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
             <DialogHeader>
               <DialogTitle>Syncing to Cloud</DialogTitle>
@@ -2543,7 +2577,7 @@ function ProjectsContent() {
                   </span>
                 </div>
                 <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                  <div 
+                  <div
                     className="h-full bg-primary transition-all duration-300"
                     style={{ width: `${(syncProgress.current / syncProgress.total) * 100}%` }}
                   />
@@ -2574,8 +2608,8 @@ function ProjectsContent() {
               </p>
               <div className="space-y-3">
                 <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="delete-device" 
+                  <Checkbox
+                    id="delete-device"
                     checked={deleteFromDevice}
                     onCheckedChange={(checked) => setDeleteFromDevice(!!checked)}
                   />
@@ -2585,8 +2619,8 @@ function ProjectsContent() {
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="delete-cloud" 
+                  <Checkbox
+                    id="delete-cloud"
                     checked={deleteFromCloud}
                     onCheckedChange={(checked) => setDeleteFromCloud(!!checked)}
                   />
@@ -2606,8 +2640,8 @@ function ProjectsContent() {
               <Button variant="outline" onClick={() => setDeleteOptionsOpen(false)}>
                 Cancel
               </Button>
-              <Button 
-                variant="destructive" 
+              <Button
+                variant="destructive"
                 onClick={performDeleteWithOptions}
                 disabled={!deleteFromDevice && !deleteFromCloud}
               >
@@ -2660,12 +2694,12 @@ function ProjectsContent() {
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => {
-                  try { localStorage.setItem("caplayground-tos-accepted", "true") } catch {}
+                  try { localStorage.setItem("caplayground-tos-accepted", "true") } catch { }
                   setIsTosOpen(false)
                 }}
               >
-                I Agree              
-                </AlertDialogAction>
+                I Agree
+              </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

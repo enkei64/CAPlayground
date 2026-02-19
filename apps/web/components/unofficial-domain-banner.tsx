@@ -19,6 +19,8 @@ function isOfficialHost(hostname: string): boolean {
 }
 
 export function UnofficialDomainBanner() {
+  // Skip in desktop builds — no domain to check
+  if (process.env.NEXT_PUBLIC_DESKTOP === "true") return null;
   const [show, setShow] = useState(false);
   const key = useMemo(() => {
     if (typeof window === "undefined") return "caplay_unofficial_dismissed:";

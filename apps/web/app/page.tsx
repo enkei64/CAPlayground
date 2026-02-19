@@ -10,7 +10,6 @@ import { BentoGridSection } from "@/components/home/bento-grid-section"
 
 
 
-export const runtime = 'nodejs'
 
 interface WallpaperItem {
   id: string | number

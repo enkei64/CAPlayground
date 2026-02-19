@@ -1,0 +1,15 @@
+# dependencies
+/node_modules
+
+# build/dev artifacts
+/build
+/dist
+/cef
+/*.so
+/*.json
+!package.json
+!electrobun.config.ts
+!vk_swiftshader_icd.json
+
+# static views (copied from apps/web/out)
+/views/app
