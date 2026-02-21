@@ -81,7 +81,7 @@ export default function DesktopHome() {
             {/* Sidebar */}
             <div className="w-64 flex-shrink-0 border-r border-border bg-card/50 flex flex-col z-40 relative">
 
-                {(platform === "mac" || platform === "darwin") && <div className="h-10" />}
+
                 {/* Header with Logo */}
                 <div className="h-16 flex items-center px-4">
                     <div className="flex items-center gap-2 group/logo flex-shrink-0">
@@ -184,7 +184,7 @@ export default function DesktopHome() {
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col h-full overflow-hidden bg-background relative z-10" style={{ WebkitAppRegion: "no-drag", appRegion: "no-drag" } as any}>
-                {(platform === "mac" || platform === "darwin") ? <div className="h-6 shrink-0" /> : <div className="h-10 shrink-0" />}
+                <div className="h-10 shrink-0" />
 
                 <div className="flex-1 overflow-y-auto px-6 pb-6 relative">
                     <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading...</div>}>

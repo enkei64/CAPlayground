@@ -203,7 +203,7 @@ win = new BrowserWindow<any>({
         x: 100,
         y: 100,
     },
-    titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "hidden",
+    titleBarStyle: process.platform === "darwin" ? "default" : "hidden",
     rpc
 });
 
