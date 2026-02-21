@@ -276,6 +276,8 @@ if (process.platform === "darwin") {
             ],
         },
     ]);
+} else {
+    ApplicationMenu.setApplicationMenu([]);
 }
 
 ApplicationMenu.on("application-menu-clicked", (event: any) => {
