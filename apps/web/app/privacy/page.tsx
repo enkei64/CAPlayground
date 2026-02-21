@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
 import { ArrowLeft, Sun, Moon } from "lucide-react"
@@ -9,6 +10,7 @@ import { DiscordPresence } from "@/components/discord-presence"
 
 export default function PrivacyPage() {
   const { theme, setTheme } = useTheme()
+  const router = useRouter()
 
   useEffect(() => {
     document.title = "CAPlayground - Privacy Policy";
@@ -19,11 +21,14 @@ export default function PrivacyPage() {
       <DiscordPresence details="Reading privacy policy" />
       {/* back */}
       <div className="absolute left-4 top-4">
-        <Link href="/">
-          <Button variant="ghost" size="sm" className="h-8 px-2">
-            <ArrowLeft className="h-4 w-4 mr-1" /> Back
-          </Button>
-        </Link>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 px-2"
+          onClick={() => router.back()}
+        >
+          <ArrowLeft className="h-4 w-4 mr-1" /> Back
+        </Button>
       </div>
 
       {/* theme */}

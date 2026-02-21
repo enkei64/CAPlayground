@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -51,8 +52,9 @@ function DiscordIcon({ className }: { className?: string }) {
   );
 }
 
-export default function AccountPage() {
+export default function AccountPage({ onBack }: { onBack?: () => void }) {
   const supabase = getSupabaseBrowserClient()
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
   const [email, setEmail] = useState<string>("")
@@ -78,7 +80,7 @@ export default function AccountPage() {
       if (!mounted) return
       const u = data.user
       if (!u) {
-        window.location.href = "/signin"
+        window.location.href = process.env.NEXT_PUBLIC_DESKTOP === 'true' ? "signin.html" : "/signin"
         return
       }
       setUserId(u.id)
@@ -194,7 +196,7 @@ export default function AccountPage() {
       setMessage("Verification email sent to update your email. You'll be signed out now; please sign back in after verifying.")
       await fetch('/api/auth/signout', { method: 'POST' })
       await supabase.auth.signOut()
-      window.location.href = "/signin"
+      window.location.href = process.env.NEXT_PUBLIC_DESKTOP === 'true' ? "signin.html" : "/signin"
     } catch (e: any) {
       setError(e.message ?? "Failed to update email")
     }
@@ -216,7 +218,7 @@ export default function AccountPage() {
   async function signOut() {
     await fetch('/api/auth/signout', { method: 'POST' })
     await supabase.auth.signOut()
-    window.location.href = "/"
+    window.location.href = process.env.NEXT_PUBLIC_DESKTOP === 'true' ? "home.html" : "/"
   }
 
   async function deleteAccount() {
@@ -241,7 +243,7 @@ export default function AccountPage() {
       }
       await fetch('/api/auth/signout', { method: 'POST' })
       await supabase.auth.signOut()
-      window.location.href = "/"
+      window.location.href = process.env.NEXT_PUBLIC_DESKTOP === 'true' ? "home.html" : "/"
     } catch (e: any) {
       setError(e.message ?? "Failed to delete account (ensure server is configured with SUPABASE_SERVICE_ROLE_KEY)")
     }
@@ -260,11 +262,20 @@ export default function AccountPage() {
       <DiscordPresence details="Managing account" />
       {/* Back to dashboard */}
       <div className="absolute left-4 top-6">
-        <Link href="/dashboard">
-          <Button variant="ghost" size="sm" className="h-8 px-2">
-            <ArrowLeft className="h-4 w-4 mr-1" /> Back
-          </Button>
-        </Link>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 px-2"
+          onClick={() => {
+            if (onBack) {
+              onBack()
+            } else {
+              router.back()
+            }
+          }}
+        >
+          <ArrowLeft className="h-4 w-4 mr-1" /> Back
+        </Button>
       </div>
 
       <div className="w-full max-w-2xl space-y-6">

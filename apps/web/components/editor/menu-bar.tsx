@@ -157,7 +157,7 @@ export function MenuBar({ projectId, showLeft = true, showRight = true, toggleLe
 
   const performDelete = async () => {
     await deleteProject(projectId);
-    router.push("/projects");
+    router.push(IS_DESKTOP ? "home.html" : "/projects");
   };
 
   const handleWindowClose = () => bunMessage('closeWindow');
@@ -178,7 +178,7 @@ export function MenuBar({ projectId, showLeft = true, showRight = true, toggleLe
             <DropdownMenuContent align="start" className="w-52">
               <DropdownMenuItem
                 className="cursor-pointer"
-                onClick={async () => { await flushPersist(); router.push('/projects'); }}
+                onClick={async () => { await flushPersist(); router.push(IS_DESKTOP ? 'home.html' : '/projects'); }}
               >
                 <ArrowLeft className="h-4 w-4 mr-2" /> Back to projects
               </DropdownMenuItem>

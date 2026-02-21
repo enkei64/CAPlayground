@@ -279,11 +279,14 @@ function DashboardContent() {
       <DiscordPresence details="Viewing dashboard" />
       {/* Back to home */}
       <div className="absolute left-4 top-6">
-        <Link href="/">
-          <Button variant="ghost" size="sm" className="h-8 px-2">
-            <ArrowLeft className="h-4 w-4 mr-1" /> Back
-          </Button>
-        </Link>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 px-2"
+          onClick={() => router.back()}
+        >
+          <ArrowLeft className="h-4 w-4 mr-1" /> Back
+        </Button>
       </div>
 
       <div className="w-full max-w-3xl">

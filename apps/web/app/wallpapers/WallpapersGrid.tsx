@@ -44,7 +44,7 @@ function isVideo(src: string) {
   return lower.endsWith(".mp4") || lower.endsWith(".mov") || lower.includes("/video/")
 }
 
-export function WallpapersGrid({ data }: { data: WallpapersResponse }) {
+export function WallpapersGrid({ data, disableUrlSync = false }: { data: WallpapersResponse, disableUrlSync?: boolean }) {
   const [dynamicData, setDynamicData] = useState<WallpapersResponse>(data)
 
   useEffect(() => {
@@ -227,7 +227,10 @@ export function WallpapersGrid({ data }: { data: WallpapersResponse }) {
   }, [dynamicData.base_url, router, trackDownload])
 
   const handleCopyLink = useCallback((item: WallpaperItem) => {
-    const url = `${window.location.origin}/wallpapers?id=${item.id}`
+    const origin = process.env.NEXT_PUBLIC_DESKTOP === 'true'
+      ? "https://caplayground.vercel.app"
+      : window.location.origin;
+    const url = `${origin}/wallpapers?id=${item.id}`
     navigator.clipboard.writeText(url).then(() => {
       setCopiedWallpaperId(item.id)
       toast({
@@ -259,8 +262,11 @@ export function WallpapersGrid({ data }: { data: WallpapersResponse }) {
           handleOpenInEditor(wallpaper)
           const params = new URLSearchParams(window.location.search)
           params.delete('action')
-          const newUrl = params.toString() ? `/wallpapers?${params.toString()}` : '/wallpapers'
-          router.replace(newUrl, { scroll: false })
+          const basePath = window.location.pathname;
+          const newUrl = params.toString() ? `${basePath}?${params.toString()}` : basePath
+          if (!disableUrlSync) {
+            router.replace(newUrl, { scroll: false })
+          }
         } else {
           setExpandedWallpaper(wallpaper)
         }
@@ -397,7 +403,10 @@ export function WallpapersGrid({ data }: { data: WallpapersResponse }) {
                 setExpandedWallpaper(item)
                 const params = new URLSearchParams(window.location.search)
                 params.set('id', String(item.id))
-                router.push(`/wallpapers?${params.toString()}`, { scroll: false })
+                const basePath = window.location.pathname;
+                if (!disableUrlSync) {
+                  router.push(`${basePath}?${params.toString()}`, { scroll: false })
+                }
               }}
             >
               <CardContent className="p-4">
@@ -501,8 +510,11 @@ export function WallpapersGrid({ data }: { data: WallpapersResponse }) {
           setExpandedWallpaper(null)
           const params = new URLSearchParams(window.location.search)
           params.delete('id')
-          const newUrl = params.toString() ? `/wallpapers?${params.toString()}` : '/wallpapers'
-          router.push(newUrl, { scroll: false })
+          const basePath = window.location.pathname;
+          const newUrl = params.toString() ? `${basePath}?${params.toString()}` : basePath
+          if (!disableUrlSync) {
+            router.push(newUrl, { scroll: false })
+          }
         }
       }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">

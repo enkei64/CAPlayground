@@ -34,6 +34,16 @@ const electrobun = new Electroview({ rpc });
             }));
         }
     },
+    openExternal: (url: string) => {
+        const b = (window as any).__electrobunBunBridge;
+        if (b) {
+            b.postMessage(JSON.stringify({
+                type: 'message',
+                id: 'openExternal',
+                payload: url
+            }));
+        }
+    },
 };
 
 const ua = navigator.userAgent.toLowerCase();

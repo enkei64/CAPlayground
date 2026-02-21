@@ -135,12 +135,12 @@ export default function EditorClient() {
             try {
                 const p = await getProject(projectId);
                 if (!p) {
-                    router.replace("/projects");
+                    router.replace(process.env.NEXT_PUBLIC_DESKTOP === 'true' ? "home.html" : "/projects");
                     return;
                 }
                 setMeta({ id: p.id, name: p.name, width: p.width ?? 390, height: p.height ?? 844 });
             } catch {
-                router.replace("/projects");
+                router.replace(process.env.NEXT_PUBLIC_DESKTOP === 'true' ? "home.html" : "/projects");
             }
         })();
     }, [projectId]);

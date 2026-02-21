@@ -271,7 +271,7 @@ const ProjectThumb = React.memo(function ProjectThumb({
   );
 });
 
-function ProjectsContent() {
+export function ProjectsContent({ hideBackButton = false }: { hideBackButton?: boolean } = {}) {
   const searchParams = useSearchParams();
   const [projects, setProjects] = useState<Project[]>([]);
   const [storageFallback, setStorageFallback] = useState<boolean>(false);
@@ -1713,13 +1713,15 @@ function ProjectsContent() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between pt-6">
           <div className="flex-1">
-            <div className="mb-2">
-              <Link href="/">
-                <Button variant="ghost" size="sm" className="h-8 px-2">
-                  <ArrowLeft className="h-4 w-4 mr-1" /> Back
-                </Button>
-              </Link>
-            </div>
+            {!hideBackButton && (
+              <div className="mb-2">
+                <Link href="/">
+                  <Button variant="ghost" size="sm" className="h-8 px-2">
+                    <ArrowLeft className="h-4 w-4 mr-1" /> Back
+                  </Button>
+                </Link>
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <h1 className="font-sfpro text-3xl md:text-4xl font-bold">Your Projects</h1>
               {loadingCloud && (
@@ -2690,7 +2692,7 @@ function ProjectsContent() {
               <AlertDialogCancel
                 onClick={() => {
                   setIsTosOpen(false)
-                  router.push("/")
+                  router.back()
                 }}
               >
                 Back

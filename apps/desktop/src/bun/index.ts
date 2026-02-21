@@ -186,6 +186,16 @@ const rpc = BrowserView.defineRPC<any>({
                 console.log(`[Electrobun Bridge] Received discord_updatePresence:`, payload);
                 setDiscordPresence(payload.details, payload.state);
             },
+            openExternal: (url: string) => {
+                const { spawn } = require('child_process');
+                let command;
+                if (process.platform === 'darwin') command = 'open';
+                else if (process.platform === 'win32') command = 'start';
+                else command = 'xdg-open';
+
+                console.log(`[Electrobun] Opening external URL: ${url} using ${command}`);
+                spawn(command, [url], { detached: true, stdio: 'ignore' }).unref();
+            }
         },
     },
 });
@@ -193,7 +203,7 @@ const rpc = BrowserView.defineRPC<any>({
 // main window
 win = new BrowserWindow<any>({
     title: "CAPlayground",
-    url: "views://app/projects.html",
+    url: "views://app/home.html",
     frame: {
         width: 1400,
         height: 900,

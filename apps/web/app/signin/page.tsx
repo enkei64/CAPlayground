@@ -116,7 +116,7 @@ export default function AuthPage() {
         password,
       });
       if (error) throw error;
-      window.location.href = "/";
+      window.location.href = process.env.NEXT_PUBLIC_DESKTOP === 'true' ? "home.html" : "/";
     } catch (e: any) {
       setError(e.message ?? "Failed to sign in");
     } finally {
