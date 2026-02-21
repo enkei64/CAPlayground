@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState, useCallback } from "react"
+import { useDiscordPresence } from "@/hooks/use-discord-presence"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -44,7 +45,19 @@ function isVideo(src: string) {
 }
 
 export function WallpapersGrid({ data }: { data: WallpapersResponse }) {
-  console.log('WallpapersGrid loaded with data:', data.wallpapers.map(w => ({ name: w.name, id: w.id })))
+  const [dynamicData, setDynamicData] = useState<WallpapersResponse>(data)
+
+  useEffect(() => {
+    fetch("https://raw.githubusercontent.com/CAPlayground/wallpapers/refs/heads/main/wallpapers.json", { cache: "no-store" })
+      .then(res => res.json())
+      .then(json => {
+        if (json && json.wallpapers) {
+          setDynamicData(json)
+        }
+      })
+      .catch(err => console.error("Failed to dynamically fetch wallpapers", err))
+  }, [])
+
   const supabase = getSupabaseBrowserClient()
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -60,6 +73,8 @@ export function WallpapersGrid({ data }: { data: WallpapersResponse }) {
   const [isIOS, setIsIOS] = useState(false)
   const [expandedWallpaper, setExpandedWallpaper] = useState<WallpaperItem | null>(null)
   const [copiedWallpaperId, setCopiedWallpaperId] = useState<string | number | null>(null)
+
+  useDiscordPresence("Browsing wallpapers", `${dynamicData.wallpapers.length} wallpapers`)
 
   const trackDownload = useCallback((wallpaperId: string, wallpaperName: string) => {
     console.log('Tracking download for wallpaper:', wallpaperId, wallpaperName)
@@ -86,7 +101,7 @@ export function WallpapersGrid({ data }: { data: WallpapersResponse }) {
       setImportingWallpaper(item.name)
       trackDownload(String(item.id), item.name)
 
-      const fileUrl = `${data.base_url}${item.file}`
+      const fileUrl = `${dynamicData.base_url}${item.file}`
 
       const response = await fetch(fileUrl)
       if (!response.ok) throw new Error('Failed to download wallpaper')
@@ -209,7 +224,7 @@ export function WallpapersGrid({ data }: { data: WallpapersResponse }) {
     } finally {
       setImportingWallpaper(null)
     }
-  }, [data.base_url, router, trackDownload])
+  }, [dynamicData.base_url, router, trackDownload])
 
   const handleCopyLink = useCallback((item: WallpaperItem) => {
     const url = `${window.location.origin}/wallpapers?id=${item.id}`
@@ -237,8 +252,8 @@ export function WallpapersGrid({ data }: { data: WallpapersResponse }) {
     const wallpaperId = searchParams?.get("id")
     const action = searchParams?.get("action")
 
-    if (wallpaperId && data.wallpapers) {
-      const wallpaper = data.wallpapers.find(w => String(w.id) === wallpaperId)
+    if (wallpaperId && dynamicData.wallpapers) {
+      const wallpaper = dynamicData.wallpapers.find(w => String(w.id) === wallpaperId)
       if (wallpaper) {
         if (action === 'edit') {
           handleOpenInEditor(wallpaper)
@@ -251,7 +266,7 @@ export function WallpapersGrid({ data }: { data: WallpapersResponse }) {
         }
       }
     }
-  }, [searchParams, data.wallpapers, handleOpenInEditor, router])
+  }, [searchParams, dynamicData.wallpapers, handleOpenInEditor, router])
 
   useEffect(() => {
     console.log('Fetching download stats...')
@@ -309,7 +324,7 @@ export function WallpapersGrid({ data }: { data: WallpapersResponse }) {
 
   const filtered = useMemo(() => {
     const t = q.trim().toLowerCase()
-    let result = data.wallpapers
+    let result = dynamicData.wallpapers
 
     if (t) {
       result = result.filter((w) => {
@@ -335,7 +350,7 @@ export function WallpapersGrid({ data }: { data: WallpapersResponse }) {
     }
 
     return result
-  }, [q, data.wallpapers, sortBy, downloadStats])
+  }, [q, dynamicData.wallpapers, sortBy, downloadStats])
 
   return (
     <div className="space-y-6">
@@ -372,8 +387,8 @@ export function WallpapersGrid({ data }: { data: WallpapersResponse }) {
 
       <div className="grid gap-6 sm:gap-7 md:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((item) => {
-          const previewUrl = `${data.base_url}${item.preview}`
-          const fileUrl = `${data.base_url}${item.file}`
+          const previewUrl = `${dynamicData.base_url}${item.preview}`
+          const fileUrl = `${dynamicData.base_url}${item.file}`
           return (
             <Card
               key={`${item.name}-${item.file}`}
@@ -492,8 +507,8 @@ export function WallpapersGrid({ data }: { data: WallpapersResponse }) {
       }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           {expandedWallpaper && (() => {
-            const previewUrl = `${data.base_url}${expandedWallpaper.preview}`
-            const fileUrl = `${data.base_url}${expandedWallpaper.file}`
+            const previewUrl = `${dynamicData.base_url}${expandedWallpaper.preview}`
+            const fileUrl = `${dynamicData.base_url}${expandedWallpaper.file}`
             return (
               <>
                 <DialogHeader>

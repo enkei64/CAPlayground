@@ -1,6 +1,101 @@
 import { BrowserWindow, BrowserView, ApplicationMenu } from "electrobun/bun";
+import net from "net";
 
-// Define the RPC schema
+// ── Discord Rich Presence
+const DISCORD_CLIENT_ID = "1415226166607876157";
+
+const OP_HANDSHAKE = 0;
+const OP_FRAME = 1;
+
+let discordSock: net.Socket | null = null;
+let discordReady = false;
+let pendingPresence: { details: string; state?: string } | null = null;
+
+function encodeDiscord(op: number, data: object): Buffer {
+    const json = JSON.stringify(data);
+    const len = Buffer.byteLength(json);
+    const buf = Buffer.alloc(8 + len);
+    buf.writeInt32LE(op, 0);
+    buf.writeInt32LE(len, 4);
+    buf.write(json, 8, len);
+    return buf;
+}
+
+function setDiscordPresence(details: string, state?: string) {
+    if (!discordReady || !discordSock) {
+        pendingPresence = { details, state };
+        return;
+    }
+    (discordSock as any).write(encodeDiscord(OP_FRAME, {
+        cmd: "SET_ACTIVITY",
+        args: {
+            pid: process.pid,
+            activity: {
+                details,
+                state,
+                assets: {
+                    large_image: "caplayground_logo",
+                    large_text: "CAPlayground",
+                },
+                timestamps: { start: Math.floor(Date.now() / 1000) },
+                instance: false,
+            },
+        },
+        nonce: Math.random().toString(36).slice(2),
+    }));
+}
+
+function connectDiscord(socketIndex = 0) {
+    if (socketIndex > 9) {
+        console.warn("[Discord RPC] Could not find Discord IPC socket (is Discord running?)");
+        return;
+    }
+    const xdg = process.env.XDG_RUNTIME_DIR || `/run/user/1000`;
+    const socketPath = process.platform === "win32"
+        ? `\\\\?\\pipe\\discord-ipc-${socketIndex}`
+        : `${xdg}/discord-ipc-${socketIndex}`;
+
+    const sock = net.createConnection(socketPath, () => {
+        discordSock = sock;
+        (sock as any).write(encodeDiscord(OP_HANDSHAKE, { v: 1, client_id: DISCORD_CLIENT_ID }));
+        console.log(`[Discord RPC] Connected to ${socketPath}, sending handshake...`);
+    });
+
+    let buf = Buffer.alloc(0);
+    sock.on("data", (chunk: Buffer) => {
+        buf = Buffer.concat([buf, chunk] as any);
+        while (buf.length >= 8) {
+            const len = buf.readInt32LE(4);
+            if (buf.length < 8 + len) break;
+            const body = buf.slice(8, 8 + len).toString("utf8");
+            buf = buf.slice(8 + len);
+            try {
+                const msg = JSON.parse(body);
+                if (msg.evt === "READY") {
+                    discordReady = true;
+                    console.log("[Discord RPC] Ready! Logged in as:", msg.data?.user?.username);
+                    if (pendingPresence) {
+                        setDiscordPresence(pendingPresence.details, pendingPresence.state);
+                        pendingPresence = null;
+                    } else {
+                        setDiscordPresence("Browsing projects");
+                    }
+                }
+            } catch { }
+        }
+    });
+
+    sock.on("error", () => connectDiscord(socketIndex + 1));
+    sock.on("close", () => {
+        discordReady = false;
+        discordSock = null;
+        setTimeout(() => connectDiscord(), 15000);
+    });
+}
+
+connectDiscord();
+
+// Define the RPC schema    
 type MyRPC = {
     bun: {
         messages: {
@@ -83,7 +178,10 @@ const rpc = BrowserView.defineRPC<any>({
                 if (fs.existsSync(fullPath)) {
                     fs.rmSync(fullPath, { recursive });
                 }
-            }
+            },
+            discord_updatePresence: ({ details, state }: { details: string; state?: string }) => {
+                setDiscordPresence(details, state);
+            },
         },
     },
 });

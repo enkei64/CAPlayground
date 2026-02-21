@@ -25,7 +25,7 @@ try {
     console.log(`  WEB_ROOT: ${WEB_ROOT}`);
     console.log(`  Output:   ${WEB_OUT}`);
 
-    await $`cd ${WEB_ROOT} && NEXT_PUBLIC_DESKTOP=true npx next build`.quiet();
+    await $`cd ${WEB_ROOT} && NEXT_PUBLIC_DESKTOP=true npx next build`;
 } finally {
     if (apiHidden) {
         console.log("[preBuild] Restoring API routes...");

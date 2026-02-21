@@ -15,6 +15,7 @@ import { BrowserWarning } from "@/components/editor/browser-warning";
 import { getProject } from "@/lib/storage";
 import { TimelineProvider } from "@/context/TimelineContext";
 import { cn } from "@/lib/utils";
+import { useDiscordPresence } from "@/hooks/use-discord-presence";
 
 export default function EditorClient() {
     const params = useParams<{ id: string }>();
@@ -143,6 +144,8 @@ export default function EditorClient() {
             }
         })();
     }, [projectId]);
+
+    useDiscordPresence("Editing a project", meta?.name ?? undefined);
 
     if (!projectId || !meta) return null;
 

@@ -35,3 +35,6 @@ next-env.d.ts
 # environment variables
 .env.local
 **/.env.local
+
+# Desktop build overrides
+**/_api/

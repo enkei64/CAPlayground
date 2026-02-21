@@ -1,14 +1,17 @@
 {
-    "name": "caplayground-desktop",
-    "version": "1.0.0",
-    "private": true,
-    "scripts": {
-        "dev": "bun ./scripts/preBuild.ts && bun x electrobun build && electrobun dev",
-        "start": "electrobun dev",
-        "dist": "bun ./scripts/preBuild.ts && electrobun build --env=stable",
-        "build:canary": "bun ./scripts/preBuild.ts && electrobun build --env=canary"
-    },
-    "dependencies": {
-        "electrobun": "latest"
-    }
+  "name": "caplayground-desktop",
+  "version": "1.0.0",
+  "dependencies": {
+    "electrobun": "latest"
+  },
+  "private": true,
+  "scripts": {
+    "dev": "bun ./scripts/preBuild.ts && bun x electrobun build && electrobun dev",
+    "start": "electrobun dev",
+    "dist": "bun ./scripts/preBuild.ts && electrobun build --env=stable",
+    "build:canary": "bun ./scripts/preBuild.ts && electrobun build --env=canary"
+  },
+  "trustedDependencies": [
+    "register-scheme"
+  ]
 }

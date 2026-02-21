@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState, Suspense } from "react";
+import { useDiscordPresence } from "@/hooks/use-discord-presence";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -278,6 +279,8 @@ function ProjectsContent() {
   useEffect(() => {
     document.title = "CAPlayground - Projects";
   }, []);
+
+  useDiscordPresence("Browsing projects", `${projects.length} project${projects.length === 1 ? "" : "s"}`);
   const [newProjectName, setNewProjectName] = useState("");
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
