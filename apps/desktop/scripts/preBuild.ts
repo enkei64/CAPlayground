@@ -79,3 +79,19 @@ for (const mock of apiMocks) {
 }
 
 console.log("[preBuild] Done! Static export copied to views/app/");
+
+const BUILD_ROOT = resolve(DESKTOP_ROOT, "build");
+if (existsSync(BUILD_ROOT)) {
+    const globLocales = new Bun.Glob("**/locales/*.pak");
+    const localeFiles = Array.from(globLocales.scanSync(BUILD_ROOT));
+    let removedCount = 0;
+    for (const localePath of localeFiles) {
+        if (!localePath.endsWith("en-US.pak")) {
+            rmSync(resolve(BUILD_ROOT, localePath));
+            removedCount++;
+        }
+    }
+    if (removedCount > 0) {
+        console.log(`[preBuild] Stripped ${removedCount} unused CEF locales from build directory.`);
+    }
+}

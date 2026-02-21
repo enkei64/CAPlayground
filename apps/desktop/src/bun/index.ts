@@ -231,50 +231,52 @@ win = new BrowserWindow<any>({
     rpc
 });
 
-ApplicationMenu.setApplicationMenu([
-    {
-        submenu: [
-            { label: "About CAPlayground", role: "about" },
-            { type: "separator" },
-            { label: "Quit", role: "quit" },
-        ],
-    },
-    {
-        label: "Edit",
-        submenu: [
-            { role: "undo" },
-            { role: "redo" },
-            { type: "separator" },
-            { role: "cut" },
-            { role: "copy" },
-            { role: "paste" },
-            { role: "pasteAndMatchStyle" },
-            { role: "delete" },
-            { role: "selectAll" },
-        ],
-    },
-    {
-        label: "View",
-        submenu: [
-            { label: "Reload", action: "reload" },
-            { type: "separator" },
-            { label: "Actual Size", action: "actualSize" },
-            { label: "Zoom In", action: "zoomIn" },
-            { label: "Zoom Out", action: "zoomOut" },
-            { type: "separator" },
-            { label: "Toggle Full Screen", action: "toggleFullScreen" },
-        ],
-    },
-    {
-        label: "Window",
-        submenu: [
-            { role: "minimize" },
-            { role: "zoom" },
-            { type: "separator" },
-            { role: "front" },
-        ],
-    },
-]);
+if (process.platform === "darwin") {
+    ApplicationMenu.setApplicationMenu([
+        {
+            submenu: [
+                { label: "About CAPlayground", role: "about" },
+                { type: "separator" },
+                { label: "Quit", role: "quit" },
+            ],
+        },
+        {
+            label: "Edit",
+            submenu: [
+                { role: "undo" },
+                { role: "redo" },
+                { type: "separator" },
+                { role: "cut" },
+                { role: "copy" },
+                { role: "paste" },
+                { role: "pasteAndMatchStyle" },
+                { role: "delete" },
+                { role: "selectAll" },
+            ],
+        },
+        {
+            label: "View",
+            submenu: [
+                { label: "Reload", action: "reload" },
+                { type: "separator" },
+                { label: "Actual Size", action: "actualSize" },
+                { label: "Zoom In", action: "zoomIn" },
+                { label: "Zoom Out", action: "zoomOut" },
+                { type: "separator" },
+                { label: "Toggle Full Screen", action: "toggleFullScreen" },
+            ],
+        },
+        {
+            label: "Window",
+            submenu: [
+                { role: "minimize" },
+                { role: "zoom" },
+                { type: "separator" },
+                { role: "front" },
+            ],
+        },
+    ]);
+}
 
 ApplicationMenu.on("application-menu-clicked", (event: any) => {
     const action = event as string;
