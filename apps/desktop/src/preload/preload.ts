@@ -11,12 +11,29 @@ const rpc = Electroview.defineRPC<any>({
 const electrobun = new Electroview({ rpc });
 
 (window as any).__electrobun = {
-    close: () => rpc.send("closeWindow"),
-    minimize: () => rpc.send("minimizeWindow"),
-    maximize: () => rpc.send("maximizeWindow"),
+    close: () => {
+        const b = (window as any).__electrobunBunBridge;
+        if (b) b.postMessage(JSON.stringify({ type: 'message', id: 'closeWindow' }));
+    },
+    minimize: () => {
+        const b = (window as any).__electrobunBunBridge;
+        if (b) b.postMessage(JSON.stringify({ type: 'message', id: 'minimizeWindow' }));
+    },
+    maximize: () => {
+        const b = (window as any).__electrobunBunBridge;
+        if (b) b.postMessage(JSON.stringify({ type: 'message', id: 'maximizeWindow' }));
+    },
     platform: "unknown",
-    updatePresence: (details: string, state?: string) =>
-        (rpc.send as any)("discord_updatePresence", { details, state }),
+    updatePresence: (details: string, state?: string) => {
+        const b = (window as any).__electrobunBunBridge;
+        if (b) {
+            b.postMessage(JSON.stringify({
+                type: 'message',
+                id: 'discord_updatePresence',
+                payload: { details, state }
+            }));
+        }
+    },
 };
 
 const ua = navigator.userAgent.toLowerCase();

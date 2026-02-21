@@ -9,6 +9,7 @@ import { AtSign, Sun, Moon } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useState } from "react"
 import { AUTH_ENABLED, getSupabaseBrowserClient } from "@/lib/supabase"
+import { DiscordPresence } from "@/components/discord-presence"
 
 export default function ForgotPasswordPage() {
   const { theme, setTheme } = useTheme()
@@ -38,6 +39,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 relative">
+      <DiscordPresence details="Recovering password" />
       {/* Theme toggle (top-right) */}
       <div className="absolute right-4 top-4">
         <Button

@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ArrowLeft, Cloud, Plus } from "lucide-react"
 import { getSupabaseBrowserClient } from "@/lib/supabase"
 import { SubmitWallpaperDialog } from "@/app/wallpapers/SubmitWallpaperDialog"
+import { DiscordPresence } from "@/components/discord-presence"
 
 const GoogleDriveIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
@@ -275,6 +276,7 @@ function DashboardContent() {
 
   return (
     <main className="min-h-screen px-4 py-20 flex items-start justify-center relative">
+      <DiscordPresence details="Viewing dashboard" />
       {/* Back to home */}
       <div className="absolute left-4 top-6">
         <Link href="/">

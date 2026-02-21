@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Lock } from "lucide-react"
 import Link from "next/link"
 import { AUTH_ENABLED, getSupabaseBrowserClient } from "@/lib/supabase"
+import { DiscordPresence } from "@/components/discord-presence"
 
 export default function ResetPasswordPage() {
   const supabase = getSupabaseBrowserClient()
@@ -50,6 +51,7 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
+      <DiscordPresence details="Recovering password" />
       <div className="w-full max-w-md">
         <Card className="border-border/80 shadow-none">
           <CardHeader className="text-center">

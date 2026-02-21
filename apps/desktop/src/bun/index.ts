@@ -7,6 +7,8 @@ const DISCORD_CLIENT_ID = "1415226166607876157";
 const OP_HANDSHAKE = 0;
 const OP_FRAME = 1;
 
+const discordStartTime = Math.floor(Date.now() / 1000);
+
 let discordSock: net.Socket | null = null;
 let discordReady = false;
 let pendingPresence: { details: string; state?: string } | null = null;
@@ -26,6 +28,7 @@ function setDiscordPresence(details: string, state?: string) {
         pendingPresence = { details, state };
         return;
     }
+    console.log(`[Discord RPC] Setting presence: ${details} | ${state}`);
     (discordSock as any).write(encodeDiscord(OP_FRAME, {
         cmd: "SET_ACTIVITY",
         args: {
@@ -37,7 +40,7 @@ function setDiscordPresence(details: string, state?: string) {
                     large_image: "caplayground_logo",
                     large_text: "CAPlayground",
                 },
-                timestamps: { start: Math.floor(Date.now() / 1000) },
+                timestamps: { start: discordStartTime },
                 instance: false,
             },
         },
@@ -179,8 +182,9 @@ const rpc = BrowserView.defineRPC<any>({
                     fs.rmSync(fullPath, { recursive });
                 }
             },
-            discord_updatePresence: ({ details, state }: { details: string; state?: string }) => {
-                setDiscordPresence(details, state);
+            discord_updatePresence: (payload: { details: string; state?: string }) => {
+                console.log(`[Electrobun Bridge] Received discord_updatePresence:`, payload);
+                setDiscordPresence(payload.details, payload.state);
             },
         },
     },

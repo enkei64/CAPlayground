@@ -6,6 +6,7 @@ import { Footer } from "@/components/footer"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useState, useEffect } from "react"
+import { DiscordPresence } from "@/components/discord-presence"
 
 export default function RoadmapPage() {
   const [selectedMonth, setSelectedMonth] = useState<1 | 2 | 3>(3);
@@ -16,104 +17,105 @@ export default function RoadmapPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <DiscordPresence details="Viewing development roadmap" />
       <Navigation />
       <main className="flex-1">
         <section className="container mx-auto px-3 min-[600px]:px-4 lg:px-6 py-16 md:py-24">
-        <header className="mb-10 space-y-2">
-          <h1 className="font-heading text-4xl md:text-5xl font-bold">Project Roadmap</h1>
-          <p className="text-muted-foreground">What's cooking in CAPlayground? (Last Updated: 17th November, 2025)</p>
-          <div className="flex gap-2 pt-4">
-            <Button
-              variant={selectedMonth === 1 ? "default" : "outline"}
-              onClick={() => setSelectedMonth(1)}
-            >
-              Month 1
-            </Button>
-            <Button
-              variant={selectedMonth === 2 ? "default" : "outline"}
-              onClick={() => setSelectedMonth(2)}
-            >
-              Month 2
-            </Button>
-            <Button
-              variant={selectedMonth === 3 ? "default" : "outline"}
-              onClick={() => setSelectedMonth(3)}
-            >
-              Month 3
-            </Button>
-          </div>
-        </header>
+          <header className="mb-10 space-y-2">
+            <h1 className="font-heading text-4xl md:text-5xl font-bold">Project Roadmap</h1>
+            <p className="text-muted-foreground">What's cooking in CAPlayground? (Last Updated: 17th November, 2025)</p>
+            <div className="flex gap-2 pt-4">
+              <Button
+                variant={selectedMonth === 1 ? "default" : "outline"}
+                onClick={() => setSelectedMonth(1)}
+              >
+                Month 1
+              </Button>
+              <Button
+                variant={selectedMonth === 2 ? "default" : "outline"}
+                onClick={() => setSelectedMonth(2)}
+              >
+                Month 2
+              </Button>
+              <Button
+                variant={selectedMonth === 3 ? "default" : "outline"}
+                onClick={() => setSelectedMonth(3)}
+              >
+                Month 3
+              </Button>
+            </div>
+          </header>
 
-        {/* Status Badges
+          {/* Status Badges
           <Badge className="align-middle mr-1">Done</Badge>
           <Badge variant="secondary" className="align-middle mx-1">In Progress</Badge>
           <Badge variant="outline" className="align-middle mx-1">Not Started</Badge>
         */}
 
-        {selectedMonth === 1 && (
-          <div className="space-y-6">
-            <RoadmapItem index={1} title="The Start" status={<Badge>Done: 24th August, 2025</Badge>}>
-              Starting the project on 24th August, 2025 because Lemin said it's time for a second wallpaper competition. Creating the project.
-            </RoadmapItem>
-            <RoadmapItem index={2} title="Projects and Base Editor" status={<Badge>Done: 24th August, 2025</Badge>}>
-              Projects page, base editor, and create .ca files.
-            </RoadmapItem>
-            <RoadmapItem index={3} title="Viewing and Editing Layers" status={<Badge>Done: 5th September, 2025</Badge>}>
-              Viewing and Editing layers of a Core Animation file. Exporting the .ca file.
-            </RoadmapItem>
-            <RoadmapItem index={4} title="Core Animation Layer Properties" status={<Badge>Done: 5th September, 2025</Badge>}>
-              Adjusting position, bounds, opacity, rotation, and more of layers.
-            </RoadmapItem>
-            <RoadmapItem index={5} title="Creating Animations, Viewing and Editing States" status={<Badge>Done: 22nd September, 2025</Badge>}>
-              Creating state transitions and keyframe animations.
-            </RoadmapItem>
-            <RoadmapItem index={6} title="CAPlayground App" status={<Badge variant="secondary" className="align-middle mx-1">Skipped</Badge>}>
-              CAPlayground app to work inside an app.
-            </RoadmapItem>
-          </div>
-        )}
-        {selectedMonth === 2 && (
-          <div className="space-y-6">
-            <RoadmapItem index={1} title="Mobile Editor" status={<Badge>Done: 4th October, 2025</Badge>}>
-              Edit wallpapers on mobile, such as your iPhone or iPad.
-            </RoadmapItem>
-            <RoadmapItem index={2} title="Wallpaper Gallery" status={<Badge>Done: 5th October, 2025</Badge>}>
-              Wallpaper Gallery to showcase your wallpapers and browse the CAPlayground community's wallpapers.
-            </RoadmapItem>
-            <RoadmapItem index={3} title="Gradient Layers" status={<Badge>Done: 7th October, 2025</Badge>}>
-              Create gradients with the modes radial, axial, and conic.
-            </RoadmapItem>
-            <RoadmapItem index={4} title="Cloud Projects" status={<Badge>Done: 18th October, 2025</Badge>}>
-              Sync your projects to Google Drive to access projects on multiple devices.
-            </RoadmapItem>
-            <RoadmapItem index={5} title="Emitters Support" status={<Badge>Done: 24th October, 2025</Badge>}>
-              Create emitters layers and cells to emit particles.
-            </RoadmapItem>
-            <RoadmapItem index={6} title="Parallax Effect (Beta)" status={<Badge>Done: 28th October, 2025</Badge>}>
-              Create wallpapers with Parallax Effect (Gyroscope) for iOS 26. Will need to make sublayers support because of this.
-            </RoadmapItem>
-          </div>
-        )}
-        {selectedMonth === 3 && (
-          <div className="space-y-6">
-            <RoadmapItem index={1} title="Replicator Layers" status={<Badge>Done: 3rd November, 2025</Badge>}>
-              Create replicator layers to duplicate and arrange layers in patterns.
-            </RoadmapItem>
-            <RoadmapItem index={2} title="Blending Modes" status={<Badge>Done: 12th November, 2025</Badge>}>
-              Create a blending effect between 2+ layers such as darken, lighten and more.
-            </RoadmapItem>
-            <RoadmapItem index={3} title="Filters" status={<Badge>Done: 12th November, 2025</Badge>}>
-              Add filters to layers for effects, such as guassin blur, contrast, and more.
-            </RoadmapItem>
-            <RoadmapItem index={4} title="Sync Video with State" status={<Badge>Done: 17th November, 2025</Badge>}>
-              Sync video with state transitions to have a video start on a state and end on another.
-            </RoadmapItem>
-            <RoadmapItem index={5} title="Performance Improvements" status={<Badge variant="secondary" className="align-middle mx-1">In Progress</Badge>}>
-              Fix bugs, improve performance, reducing crashes and lagging on devices with optimisation settings.
-            </RoadmapItem>
-          </div>
-        )}
-      </section>
+          {selectedMonth === 1 && (
+            <div className="space-y-6">
+              <RoadmapItem index={1} title="The Start" status={<Badge>Done: 24th August, 2025</Badge>}>
+                Starting the project on 24th August, 2025 because Lemin said it's time for a second wallpaper competition. Creating the project.
+              </RoadmapItem>
+              <RoadmapItem index={2} title="Projects and Base Editor" status={<Badge>Done: 24th August, 2025</Badge>}>
+                Projects page, base editor, and create .ca files.
+              </RoadmapItem>
+              <RoadmapItem index={3} title="Viewing and Editing Layers" status={<Badge>Done: 5th September, 2025</Badge>}>
+                Viewing and Editing layers of a Core Animation file. Exporting the .ca file.
+              </RoadmapItem>
+              <RoadmapItem index={4} title="Core Animation Layer Properties" status={<Badge>Done: 5th September, 2025</Badge>}>
+                Adjusting position, bounds, opacity, rotation, and more of layers.
+              </RoadmapItem>
+              <RoadmapItem index={5} title="Creating Animations, Viewing and Editing States" status={<Badge>Done: 22nd September, 2025</Badge>}>
+                Creating state transitions and keyframe animations.
+              </RoadmapItem>
+              <RoadmapItem index={6} title="CAPlayground App" status={<Badge variant="secondary" className="align-middle mx-1">Skipped</Badge>}>
+                CAPlayground app to work inside an app.
+              </RoadmapItem>
+            </div>
+          )}
+          {selectedMonth === 2 && (
+            <div className="space-y-6">
+              <RoadmapItem index={1} title="Mobile Editor" status={<Badge>Done: 4th October, 2025</Badge>}>
+                Edit wallpapers on mobile, such as your iPhone or iPad.
+              </RoadmapItem>
+              <RoadmapItem index={2} title="Wallpaper Gallery" status={<Badge>Done: 5th October, 2025</Badge>}>
+                Wallpaper Gallery to showcase your wallpapers and browse the CAPlayground community's wallpapers.
+              </RoadmapItem>
+              <RoadmapItem index={3} title="Gradient Layers" status={<Badge>Done: 7th October, 2025</Badge>}>
+                Create gradients with the modes radial, axial, and conic.
+              </RoadmapItem>
+              <RoadmapItem index={4} title="Cloud Projects" status={<Badge>Done: 18th October, 2025</Badge>}>
+                Sync your projects to Google Drive to access projects on multiple devices.
+              </RoadmapItem>
+              <RoadmapItem index={5} title="Emitters Support" status={<Badge>Done: 24th October, 2025</Badge>}>
+                Create emitters layers and cells to emit particles.
+              </RoadmapItem>
+              <RoadmapItem index={6} title="Parallax Effect (Beta)" status={<Badge>Done: 28th October, 2025</Badge>}>
+                Create wallpapers with Parallax Effect (Gyroscope) for iOS 26. Will need to make sublayers support because of this.
+              </RoadmapItem>
+            </div>
+          )}
+          {selectedMonth === 3 && (
+            <div className="space-y-6">
+              <RoadmapItem index={1} title="Replicator Layers" status={<Badge>Done: 3rd November, 2025</Badge>}>
+                Create replicator layers to duplicate and arrange layers in patterns.
+              </RoadmapItem>
+              <RoadmapItem index={2} title="Blending Modes" status={<Badge>Done: 12th November, 2025</Badge>}>
+                Create a blending effect between 2+ layers such as darken, lighten and more.
+              </RoadmapItem>
+              <RoadmapItem index={3} title="Filters" status={<Badge>Done: 12th November, 2025</Badge>}>
+                Add filters to layers for effects, such as guassin blur, contrast, and more.
+              </RoadmapItem>
+              <RoadmapItem index={4} title="Sync Video with State" status={<Badge>Done: 17th November, 2025</Badge>}>
+                Sync video with state transitions to have a video start on a state and end on another.
+              </RoadmapItem>
+              <RoadmapItem index={5} title="Performance Improvements" status={<Badge variant="secondary" className="align-middle mx-1">In Progress</Badge>}>
+                Fix bugs, improve performance, reducing crashes and lagging on devices with optimisation settings.
+              </RoadmapItem>
+            </div>
+          )}
+        </section>
       </main>
       <Footer />
     </div>

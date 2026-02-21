@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Github, Users, GitCommit, AlertCircle } from "lucide-react"
 import Link from "next/link"
+import { DiscordPresence } from "@/components/discord-presence"
 
 export const metadata: Metadata = {
   title: "CAPlayground - Contributors",
@@ -49,6 +50,7 @@ export default async function ContributorsPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <DiscordPresence details="Viewing project contributors" />
       <Navigation />
 
       <main className="flex-1 py-16">

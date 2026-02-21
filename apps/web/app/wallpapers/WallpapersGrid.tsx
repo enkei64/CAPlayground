@@ -74,7 +74,7 @@ export function WallpapersGrid({ data }: { data: WallpapersResponse }) {
   const [expandedWallpaper, setExpandedWallpaper] = useState<WallpaperItem | null>(null)
   const [copiedWallpaperId, setCopiedWallpaperId] = useState<string | number | null>(null)
 
-  useDiscordPresence("Browsing wallpapers", `${dynamicData.wallpapers.length} wallpapers`)
+  useDiscordPresence("Browsing community wallpapers", `${dynamicData.wallpapers.length} wallpapers`)
 
   const trackDownload = useCallback((wallpaperId: string, wallpaperName: string) => {
     console.log('Tracking download for wallpaper:', wallpaperId, wallpaperName)

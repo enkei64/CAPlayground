@@ -7,7 +7,7 @@ import Link from "next/link"
 import { Send, Filter as NotificationIcon, Github, Star, Download } from "lucide-react"
 import Image from "next/image"
 import { BentoGridSection } from "@/components/home/bento-grid-section"
-
+import { DiscordPresence } from "@/components/discord-presence"
 
 
 
@@ -108,6 +108,7 @@ export default async function HomePage() {
   }
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <DiscordPresence details="Browsing home page" />
       <div
         className="fixed left-0 right-0 z-50 transition-all duration-300"
         style={{ top: `calc(1rem + var(--unofficial-banner-height, 0px))` }}
