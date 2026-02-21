@@ -1,4 +1,4 @@
-const IS_DESKTOP = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_DESKTOP === 'true';
+export const IS_DESKTOP = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_DESKTOP === 'true';
 
 let lastRequestId = 0;
 const pendingRequests = new Map<number, { resolve: (v: any) => void; reject: (e: Error) => void }>();

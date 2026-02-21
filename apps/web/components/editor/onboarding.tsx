@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
+import { persistence } from "@/lib/persistence";
 
 type Step = {
   id: string;
@@ -110,16 +111,20 @@ export function EditorOnboarding({ showLeft, showRight }: { showLeft: boolean; s
   }, [open, currentAnchor?.el]);
 
   useEffect(() => {
-    setReady(true);
-    if (showLeft && showRight) {
-      const seen = typeof window !== 'undefined' ? localStorage.getItem('caplay_onboarding_seen') === '1' : false;
-      if (!seen) {
-        setTimeout(() => setOpen(true), 150);
+    (async () => {
+      setReady(true);
+      if (showLeft && showRight) {
+        await persistence.migrateFromLocalStorage(["caplay_onboarding_seen"]);
+
+        const seen = await persistence.get("onboardingSeen");
+        if (!seen) {
+          setTimeout(() => setOpen(true), 150);
+        }
+      } else {
+        setOpen(false);
       }
-    } else {
-      setOpen(false);
-    }
-    
+    })();
+
     const onStart = () => {
       if (showLeft && showRight) {
         setIdx(0);
@@ -130,8 +135,8 @@ export function EditorOnboarding({ showLeft, showRight }: { showLeft: boolean; s
     return () => window.removeEventListener('caplay:start-onboarding' as any, onStart);
   }, [showLeft, showRight]);
 
-  const finish = () => {
-    try { localStorage.setItem('caplay_onboarding_seen', '1'); } catch {}
+  const finish = async () => {
+    await persistence.set("onboardingSeen", true);
     setOpen(false);
   };
   const goNext = () => setIdx((v) => {

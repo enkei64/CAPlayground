@@ -19,6 +19,7 @@ import {
 import { sanitizeFilename, dataURLToBlob, normalize, uploadFrameAssets, cleanupOrphanedAssets, collectReferencedAssets, copyAssetsBetweenViews, type CAView, convertSvgToPngIfNeeded } from "@/lib/editor/file-utils";
 import { CAEmitterCell } from "./emitter/emitter";
 import { assetCache } from "@/hooks/use-asset-url";
+import { persistence } from "@/lib/persistence";
 
 type CADoc = {
   layers: AnyLayer[];
@@ -311,7 +312,7 @@ export function EditorProvider({
           docs: { background: backgroundDoc, floating: floatingDoc, wallpaper: wallpaperDoc },
         };
         try {
-          const applyAppearancePrefs = (docIn: ProjectDocument): ProjectDocument => {
+          const applyAppearancePrefs = async (docIn: ProjectDocument): Promise<ProjectDocument> => {
             const keys: Array<'background' | 'floating' | 'wallpaper'> = ['background', 'floating', 'wallpaper'];
             const out: ProjectDocument = docIn;
             for (const k of keys) {
@@ -320,15 +321,17 @@ export function EditorProvider({
               let split: boolean = false;
               let mode: 'light' | 'dark' = cur.appearanceMode || 'light';
               try {
-                const s = localStorage.getItem(`caplay_states_appearance_split_${projectId}_${k}`);
-                if (s === '1' || s === '0') {
-                  split = s === '1';
+                const s = await persistence.get(`caplay_states_appearance_split_${projectId}_${k}`);
+                if (s === '1' || s === 'true' || s === true) {
+                  split = true;
+                } else if (s === '0' || s === 'false' || s === false) {
+                  split = false;
                 } else {
                   const st = Array.isArray(cur.states) ? cur.states : [];
                   const hasVariant = st.some((n) => /\s(Light|Dark)$/.test(String(n || '')));
                   split = hasVariant;
                 }
-                const m = localStorage.getItem(`caplay_states_appearance_mode_${projectId}_${k}`);
+                const m = await persistence.get(`caplay_states_appearance_mode_${projectId}_${k}`);
                 if (m === 'dark' || m === 'light') mode = m;
               } catch { }
               cur.appearanceSplit = split;
@@ -371,7 +374,7 @@ export function EditorProvider({
             }
             return out;
           };
-          const applied = applyAppearancePrefs(initial);
+          const applied = await applyAppearancePrefs(initial);
           skipPersistRef.current = true;
           setDoc(applied);
         } catch {

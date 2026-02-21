@@ -9,6 +9,7 @@ import { ArrowRight, Eye, Settings } from "lucide-react";
 import { useEditor } from "./editor-context";
 import { useState, useMemo } from "react";
 import { AnyLayer } from "@/lib/ca/types";
+import { persistence } from "@/lib/persistence";
 
 export function StatesPanel() {
   const { doc, setDoc, setActiveState } = useEditor();
@@ -20,12 +21,12 @@ export function StatesPanel() {
   const [viewAllOpen, setViewAllOpen] = useState(false);
 
   const allStates = useMemo(() => ['Base State', ...states], [states]);
-  
+
   const stateOverrides = current?.stateOverrides || {};
 
   const overridesByLayer = useMemo(() => {
     const result: Record<string, Record<string, Array<{ keyPath: string; value: string | number }>>> = {};
-    
+
     Object.entries(stateOverrides).forEach(([stateName, overrides]) => {
       overrides.forEach(override => {
         if (!result[override.targetId]) {
@@ -40,7 +41,7 @@ export function StatesPanel() {
         });
       });
     });
-    
+
     return result;
   }, [stateOverrides]);
 
@@ -66,9 +67,9 @@ export function StatesPanel() {
       if (!prev) return prev;
       const key = prev.activeCA;
       const cur = prev.docs[key];
-      const baseStates = ["Locked","Unlock","Sleep"] as const;
-      const lightStates = ["Locked Light","Unlock Light","Sleep Light"] as const;
-      const darkStates = ["Locked Dark","Unlock Dark","Sleep Dark"] as const;
+      const baseStates = ["Locked", "Unlock", "Sleep"] as const;
+      const lightStates = ["Locked Light", "Unlock Light", "Sleep Light"] as const;
+      const darkStates = ["Locked Dark", "Unlock Dark", "Sleep Dark"] as const;
       const nextStates = checked ? ([...lightStates, ...darkStates] as string[]) : ([...baseStates] as string[]);
       const curSO = cur.stateOverrides || {};
       let nextSO: Record<string, Array<{ targetId: string; keyPath: string; value: string | number }>> = {};
@@ -95,17 +96,17 @@ export function StatesPanel() {
         nextActive = `${nextActive} ${suffix}` as any;
       }
       if (!checked && nextActive && /\s(Light|Dark)$/.test(nextActive)) {
-        nextActive = nextActive.replace(/\s(Light|Dark)$/,'') as any;
+        nextActive = nextActive.replace(/\s(Light|Dark)$/, '') as any;
       }
       try {
-        localStorage.setItem(`caplay_states_appearance_split_${prev.meta.id}_${key}`, checked ? '1' : '0');
-      } catch {}
+        persistence.set(`caplay_states_appearance_split_${prev.meta.id}_${key}`, checked ? '1' : '0');
+      } catch { }
       const next = { ...cur, appearanceSplit: checked, states: nextStates, stateOverrides: nextSO, activeState: nextActive } as any;
       return { ...prev, docs: { ...prev.docs, [key]: next } } as any;
     });
   };
 
-  
+
 
   return (
     <Card className="p-0 gap-0 h-full flex flex-col" data-tour-id="states-panel">
@@ -120,59 +121,59 @@ export function StatesPanel() {
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
-            <DialogHeader>
-              <DialogTitle>State Transitions Overview</DialogTitle>
-            </DialogHeader>
-            <div className="flex-1 overflow-y-auto space-y-6 pr-2">
-              {/* States Summary */}
-              <div>
-                <h3 className="text-sm font-semibold mb-2">Available States</h3>
-                <div className="flex flex-wrap gap-2">
-                  {allStates.map(state => (
-                    <Badge key={state} variant={state === active ? "default" : "secondary"}>
-                      {state}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
-              {/* State Overrides by Layer */}
-              {Object.keys(overridesByLayer).length > 0 && (
+              <DialogHeader>
+                <DialogTitle>State Transitions Overview</DialogTitle>
+              </DialogHeader>
+              <div className="flex-1 overflow-y-auto space-y-6 pr-2">
+                {/* States Summary */}
                 <div>
-                  <h3 className="text-sm font-semibold mb-3">State Overrides by Layer</h3>
-                  <div className="space-y-4">
-                    {Object.entries(overridesByLayer).map(([layerId, stateData]) => (
-                      <div key={layerId} className="border rounded-lg p-3 bg-muted/30">
-                        <div className="font-medium text-sm mb-2">{findLayerName(layerId)}</div>
-                        <div className="space-y-2">
-                          {Object.entries(stateData).map(([stateName, overrides]) => (
-                            <div key={stateName} className="text-xs">
-                              <Badge variant="outline" className="mb-1">{stateName}</Badge>
-                              <div className="ml-2 space-y-1">
-                                {overrides.map((override, idx) => (
-                                  <div key={idx} className="flex items-center gap-2 text-muted-foreground">
-                                    <code className="text-xs bg-muted px-1 rounded">{override.keyPath}</code>
-                                    <ArrowRight className="h-3 w-3" />
-                                    <span className="font-mono">{override.value}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                  <h3 className="text-sm font-semibold mb-2">Available States</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {allStates.map(state => (
+                      <Badge key={state} variant={state === active ? "default" : "secondary"}>
+                        {state}
+                      </Badge>
                     ))}
                   </div>
                 </div>
-              )}
 
-              {Object.keys(overridesByLayer).length === 0 && (
-                <div className="text-center text-muted-foreground py-8">
-                  <p className="text-sm">No state transitions configured yet.</p>
-                  <p className="text-xs mt-1">Select a state and modify layer properties to create transitions.</p>
-                </div>
-              )}
-            </div>
+                {/* State Overrides by Layer */}
+                {Object.keys(overridesByLayer).length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-semibold mb-3">State Overrides by Layer</h3>
+                    <div className="space-y-4">
+                      {Object.entries(overridesByLayer).map(([layerId, stateData]) => (
+                        <div key={layerId} className="border rounded-lg p-3 bg-muted/30">
+                          <div className="font-medium text-sm mb-2">{findLayerName(layerId)}</div>
+                          <div className="space-y-2">
+                            {Object.entries(stateData).map(([stateName, overrides]) => (
+                              <div key={stateName} className="text-xs">
+                                <Badge variant="outline" className="mb-1">{stateName}</Badge>
+                                <div className="ml-2 space-y-1">
+                                  {overrides.map((override, idx) => (
+                                    <div key={idx} className="flex items-center gap-2 text-muted-foreground">
+                                      <code className="text-xs bg-muted px-1 rounded">{override.keyPath}</code>
+                                      <ArrowRight className="h-3 w-3" />
+                                      <span className="font-mono">{override.value}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {Object.keys(overridesByLayer).length === 0 && (
+                  <div className="text-center text-muted-foreground py-8">
+                    <p className="text-sm">No state transitions configured yet.</p>
+                    <p className="text-xs mt-1">Select a state and modify layer properties to create transitions.</p>
+                  </div>
+                )}
+              </div>
             </DialogContent>
           </Dialog>
           {!gyroEnabled && (

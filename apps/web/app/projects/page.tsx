@@ -60,6 +60,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getAnchor } from "@/components/editor/canvas-preview/utils/coordinates";
+import { persistence } from "@/lib/persistence";
 
 interface Project { id: string; name: string; createdAt: string; width?: number; height?: number }
 
@@ -379,7 +380,7 @@ export function ProjectsContent({ hideBackButton = false }: { hideBackButton?: b
       if (response.ok) {
         const data = await response.json();
 
-        const syncData = JSON.parse(localStorage.getItem('caplayground-sync') || '{}');
+        const syncData = await persistence.get('syncData') || {};
 
         const cloudProjs = (data.files || []).map((file: any) => {
           const projectEntry = Object.entries(syncData).find(
@@ -460,8 +461,10 @@ export function ProjectsContent({ hideBackButton = false }: { hideBackButton?: b
   }, [projectsArray.length, cloudProjects.length, Object.keys(syncStatus).length]);
 
   useEffect(() => {
-    const syncData = JSON.parse(localStorage.getItem('caplayground-sync') || '{}');
-    setSyncStatus(syncData);
+    (async () => {
+      const syncData = await persistence.get('syncData') || {};
+      setSyncStatus(syncData);
+    })();
   }, [projects]);
 
   useEffect(() => {
@@ -602,23 +605,20 @@ export function ProjectsContent({ hideBackButton = false }: { hideBackButton?: b
 
   useEffect(() => {
     (async () => {
+      await persistence.migrateFromLocalStorage(["caplayground-tos-accepted"]);
+
       try {
         const { getSupabaseBrowserClient } = await import("@/lib/supabase");
         const supabase = getSupabaseBrowserClient();
         const { data } = await supabase.auth.getSession();
         const hasSession = !!data.session;
         setIsSignedIn(hasSession);
-        try {
-          const accepted = localStorage.getItem("caplayground-tos-accepted") === "true";
-          if (!hasSession && !accepted) setIsTosOpen(true);
-        } catch {
-          if (!hasSession) setIsTosOpen(true);
-        }
+
+        const accepted = await persistence.get("tosAccepted");
+        if (!hasSession && !accepted) setIsTosOpen(true);
       } catch {
-        try {
-          const accepted = localStorage.getItem("caplayground-tos-accepted") === "true";
-          if (!accepted) setIsTosOpen(true);
-        } catch { }
+        const accepted = await persistence.get("tosAccepted");
+        if (!accepted) setIsTosOpen(true);
       }
     })();
   }, []);
@@ -935,9 +935,9 @@ export function ProjectsContent({ hideBackButton = false }: { hideBackButton?: b
             });
 
             if (response.ok) {
-              const syncData = JSON.parse(localStorage.getItem('caplayground-sync') || '{}');
+              const syncData = await persistence.get('syncData') || {};
               delete syncData[projectToDelete.id];
-              localStorage.setItem('caplayground-sync', JSON.stringify(syncData));
+              await persistence.set('syncData', syncData);
 
               setCloudFetched(false);
               fetchCloudProjects();
@@ -1668,9 +1668,9 @@ export function ProjectsContent({ hideBackButton = false }: { hideBackButton?: b
             });
 
             if (response.ok) {
-              const syncData = JSON.parse(localStorage.getItem('caplayground-sync') || '{}');
+              const syncData = await persistence.get('syncData') || {};
               delete syncData[project.id];
-              localStorage.setItem('caplayground-sync', JSON.stringify(syncData));
+              await persistence.set('syncData', syncData);
             }
           } catch (err) {
             console.error(`Failed to delete ${project.name} from cloud:`, err);
@@ -2698,9 +2698,9 @@ export function ProjectsContent({ hideBackButton = false }: { hideBackButton?: b
                 Back
               </AlertDialogCancel>
               <AlertDialogAction
-                onClick={() => {
-                  try { localStorage.setItem("caplayground-tos-accepted", "true") } catch { }
-                  setIsTosOpen(false)
+                onClick={async () => {
+                  await persistence.set("tosAccepted", true);
+                  setIsTosOpen(false);
                 }}
               >
                 I Agree

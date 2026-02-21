@@ -16,6 +16,7 @@ import { getProject } from "@/lib/storage";
 import { TimelineProvider } from "@/context/TimelineContext";
 import { cn } from "@/lib/utils";
 import { useDiscordPresence } from "@/hooks/use-discord-presence";
+import { persistence } from "@/lib/persistence";
 
 export default function EditorClient() {
     const params = useParams<{ id: string }>();
@@ -34,8 +35,10 @@ export default function EditorClient() {
         if (id) {
             setProjectId(id);
             localStorage.setItem("caplayground_last_editor_id", id);
+            persistence.set("lastEditorId", id);
         }
     }, [params, searchParams]);
+
     const [meta, setMeta] = useState<{ id: string; name: string; width: number; height: number; background?: string } | null>(null);
     const [uiDensity] = useLocalStorage<'default' | 'compact'>("caplay_settings_ui_density", 'default');
     const [leftWidth, setLeftWidth] = useLocalStorage<number>("caplay_panel_left_width", 320);

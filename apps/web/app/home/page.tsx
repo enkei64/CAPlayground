@@ -227,7 +227,7 @@ export default function DesktopHome() {
                                                 <Folder className="h-10 w-10 text-accent" />
                                             </div>
                                             <h3 className="font-bold text-2xl mb-2">Projects</h3>
-                                            <p className="text-sm text-muted-foreground text-center line-clamp-2">Manage, create, and edit your local and cloud wallpapers.</p>
+                                            <p className="text-sm text-muted-foreground text-center">Manage, create, and edit your local and cloud wallpapers.</p>
                                         </button>
 
                                         <button
@@ -238,7 +238,7 @@ export default function DesktopHome() {
                                                 <Compass className="h-10 w-10 text-accent" />
                                             </div>
                                             <h3 className="font-bold text-2xl mb-2">Community</h3>
-                                            <p className="text-sm text-muted-foreground text-center line-clamp-2">Browse and download wallpapers created by others.</p>
+                                            <p className="text-sm text-muted-foreground text-center">Browse and download wallpapers created by others.</p>
                                         </button>
                                     </div>
                                 </div>

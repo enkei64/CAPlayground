@@ -47,7 +47,7 @@ export function BentoItem({ item, renderLayer, onExampleClick, className }: Bent
                         <h3 className="text-xl md:text-2xl font-bold text-white mb-2 drop-shadow-md">
                             {item.title}
                         </h3>
-                        <p className="text-sm text-zinc-300 drop-shadow-sm line-clamp-2 md:line-clamp-none">
+                        <p className="text-sm text-zinc-300 drop-shadow-sm">
                             {item.description}
                         </p>
                     </div>
