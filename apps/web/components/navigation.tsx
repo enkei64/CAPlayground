@@ -114,7 +114,7 @@ export function Navigation() {
             : "rounded-none border-b border-transparent shadow-none"
             } ${IS_DESKTOP ? 'electrobun-webkit-app-region-drag' : ''}`}
         >
-          <div className={`grid [grid-template-columns:auto_1fr_auto] h-14 items-center px-4 min-[1045px]:px-6`}>
+          <div className={`grid [grid-template-columns:auto_1fr_auto] h-14 items-center ${IS_DESKTOP && desktopPlatform === 'darwin' ? 'pl-[78px] pr-4' : 'px-4'} min-[1045px]:px-6`}>
             {/* Logo and App Name */}
             <div className="flex items-center space-x-3 justify-self-start">
               {/* light icon */}
@@ -216,8 +216,8 @@ export function Navigation() {
                 )}
               </Button>
 
-              {/* Desktop window controls */}
-              {IS_DESKTOP && (
+              {/* Desktop window controls for Windows/Linux */}
+              {IS_DESKTOP && desktopPlatform !== 'darwin' && (
                 <div className="flex items-center ml-2 -mr-1 electrobun-webkit-app-region-no-drag">
                   <button
                     onClick={handleWindowMinimize}

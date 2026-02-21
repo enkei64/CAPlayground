@@ -52,35 +52,36 @@ export default function DesktopHome() {
                 style={{ WebkitAppRegion: "drag", appRegion: "drag" } as any}
             />
 
-            {/* Desktop window controls */}
-            <div className="fixed top-0 right-0 z-[60] flex items-center h-16 px-4 gap-1 drag-none" style={{ WebkitAppRegion: "no-drag", appRegion: "no-drag" } as any}>
-                <button
-                    onClick={() => handleWindowControl("minimize")}
-                    className="w-10 h-10 flex items-center justify-center hover:bg-muted text-muted-foreground/40 hover:text-foreground transition-all rounded-md"
-                    title="Minimize"
-                >
-                    <Minus className="h-5 w-5" />
-                </button>
-                <button
-                    onClick={() => handleWindowControl("maximize")}
-                    className="w-10 h-10 flex items-center justify-center hover:bg-muted text-muted-foreground/40 hover:text-foreground transition-all rounded-md"
-                    title="Maximize"
-                >
-                    <Square className="h-5 w-5" />
-                </button>
-                <button
-                    onClick={() => handleWindowControl("close")}
-                    className="w-10 h-10 flex items-center justify-center hover:bg-red-500/10 hover:text-red-500 text-muted-foreground/40 transition-all rounded-md"
-                    title="Close"
-                >
-                    <X className="h-5 w-5" />
-                </button>
-            </div>
+            {platform !== "darwin" && platform !== "mac" && (
+                <div className="fixed top-0 right-0 z-[60] flex items-center h-16 px-4 gap-1 drag-none" style={{ WebkitAppRegion: "no-drag", appRegion: "no-drag" } as any}>
+                    <button
+                        onClick={() => handleWindowControl("minimize")}
+                        className="w-10 h-10 flex items-center justify-center hover:bg-muted text-muted-foreground/40 hover:text-foreground transition-all rounded-md"
+                        title="Minimize"
+                    >
+                        <Minus className="h-5 w-5" />
+                    </button>
+                    <button
+                        onClick={() => handleWindowControl("maximize")}
+                        className="w-10 h-10 flex items-center justify-center hover:bg-muted text-muted-foreground/40 hover:text-foreground transition-all rounded-md"
+                        title="Maximize"
+                    >
+                        <Square className="h-5 w-5" />
+                    </button>
+                    <button
+                        onClick={() => handleWindowControl("close")}
+                        className="w-10 h-10 flex items-center justify-center hover:bg-red-500/10 hover:text-red-500 text-muted-foreground/40 transition-all rounded-md"
+                        title="Close"
+                    >
+                        <X className="h-5 w-5" />
+                    </button>
+                </div>
+            )}
 
             {/* Sidebar */}
             <div className="w-64 flex-shrink-0 border-r border-border bg-card/50 flex flex-col z-40 relative">
 
-
+                {(platform === "mac" || platform === "darwin") && <div className="h-10" />}
                 {/* Header with Logo */}
                 <div className="h-16 flex items-center px-4">
                     <div className="flex items-center gap-2 group/logo flex-shrink-0">
@@ -183,7 +184,7 @@ export default function DesktopHome() {
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col h-full overflow-hidden bg-background relative z-10" style={{ WebkitAppRegion: "no-drag", appRegion: "no-drag" } as any}>
-                <div className="h-10 shrink-0" />
+                {(platform === "mac" || platform === "darwin") ? <div className="h-6 shrink-0" /> : <div className="h-10 shrink-0" />}
 
                 <div className="flex-1 overflow-y-auto px-6 pb-6 relative">
                     <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading...</div>}>

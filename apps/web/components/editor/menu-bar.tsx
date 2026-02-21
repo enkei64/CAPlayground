@@ -165,7 +165,7 @@ export function MenuBar({ projectId, showLeft = true, showRight = true, toggleLe
   const handleWindowMaximize = () => bunMessage('maximizeWindow');
 
   return (
-    <div className={`w-full h-12 flex items-center justify-between border-b bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60 ${IS_DESKTOP ? 'electrobun-webkit-app-region-drag' : ''} px-3`}>
+    <div className={`w-full h-12 flex items-center justify-between border-b bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60 ${IS_DESKTOP ? 'electrobun-webkit-app-region-drag' : ''} ${IS_DESKTOP && desktopPlatform === 'darwin' ? 'pl-[78px] pr-3' : 'px-3'}`}>
       <div className={`flex items-center gap-2 ${IS_DESKTOP ? 'electrobun-webkit-app-region-no-drag' : ''}`}>
         <div className="border rounded-md p-0.5">
           <DropdownMenu>
@@ -388,8 +388,8 @@ export function MenuBar({ projectId, showLeft = true, showRight = true, toggleLe
           </Button>
         </div>
         <ExportDialog />
-        {/* Desktop window controls */}
-        {IS_DESKTOP && (
+        {/* Desktop window controls for Windows/Linux */}
+        {IS_DESKTOP && desktopPlatform !== 'darwin' && (
           <div className="flex items-center ml-2 -mr-1">
             <button
               onClick={handleWindowMinimize}
