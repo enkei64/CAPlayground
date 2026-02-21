@@ -51,18 +51,33 @@ function setDiscordPresence(details: string, state?: string) {
     }));
 }
 
+let isScanningDiscord = false;
 function connectDiscord(socketIndex = 0) {
+    if (socketIndex === 0) {
+        if (isScanningDiscord || discordSock) return;
+        isScanningDiscord = true;
+    }
+
     if (socketIndex > 9) {
         console.warn("[Discord RPC] Could not find Discord IPC socket (is Discord running?)");
+        isScanningDiscord = false;
+        setTimeout(() => connectDiscord(0), 15000);
         return;
     }
-    const xdg = process.env.XDG_RUNTIME_DIR || `/run/user/1000`;
+
+    const getFolder = () => {
+        const { env } = process;
+        if (process.platform === "win32") return "";
+        return env.XDG_RUNTIME_DIR || env.TMPDIR || env.TMPSDIR || env.TMP || env.TEMP || "/tmp";
+    }
+
     const socketPath = process.platform === "win32"
         ? `\\\\?\\pipe\\discord-ipc-${socketIndex}`
-        : `${xdg}/discord-ipc-${socketIndex}`;
+        : path.join(getFolder(), `discord-ipc-${socketIndex}`);
 
     const sock = net.createConnection(socketPath, () => {
         discordSock = sock;
+        isScanningDiscord = false;
         (sock as any).write(encodeDiscord(OP_HANDSHAKE, { v: 1, client_id: DISCORD_CLIENT_ID }));
         console.log(`[Discord RPC] Connected to ${socketPath}, sending handshake...`);
     });
@@ -73,8 +88,8 @@ function connectDiscord(socketIndex = 0) {
         while (buf.length >= 8) {
             const len = buf.readInt32LE(4);
             if (buf.length < 8 + len) break;
-            const body = buf.slice(8, 8 + len).toString("utf8");
-            buf = buf.slice(8 + len);
+            const body = buf.subarray(8, 8 + len).toString("utf8");
+            buf = buf.subarray(8 + len);
             try {
                 const msg = JSON.parse(body);
                 if (msg.evt === "READY") {
@@ -91,11 +106,20 @@ function connectDiscord(socketIndex = 0) {
         }
     });
 
-    sock.on("error", () => connectDiscord(socketIndex + 1));
+    sock.on("error", () => {
+    });
+
     sock.on("close", () => {
-        discordReady = false;
-        discordSock = null;
-        setTimeout(() => connectDiscord(), 15000);
+        const wasConnected = discordSock === sock;
+        if (wasConnected) {
+            discordReady = false;
+            discordSock = null;
+            console.log("[Discord RPC] Connection closed, retrying in 15s...");
+            setTimeout(() => connectDiscord(0), 15000);
+        } else if (isScanningDiscord) {
+            // We were scanning and this index failed, try next
+            connectDiscord(socketIndex + 1);
+        }
     });
 }
 

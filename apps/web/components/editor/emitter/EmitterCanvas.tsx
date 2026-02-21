@@ -20,7 +20,7 @@ export function EmitterCanvas({
   const runningRef = useRef(!paused);
   const layerRef = useRef<CAEmitterLayer>(null);
   const startAnimationRef = useRef<(() => void) | null>(null);
-  
+
   const docHeight = doc?.meta.height ?? 0;
   const docWidth = doc?.meta.width ?? 0;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -77,6 +77,7 @@ export function EmitterCanvas({
     layer.renderMode = emitterLayer.renderMode || layer.renderMode;
     layerRef.current = layer;
 
+    let isEffectActive = true;
     const loadCells = async () => {
       const cellPromises = emitterLayer.emitterCells?.map(async (cell) => {
         const img = cellImages.get(cell.id) || null;
@@ -102,6 +103,8 @@ export function EmitterCanvas({
       }) || [];
 
       const loadedCells = await Promise.all(cellPromises);
+      if (!isEffectActive) return;
+
       layer.emitterCells.push(...loadedCells);
 
       if (runningRef.current) {
@@ -110,12 +113,13 @@ export function EmitterCanvas({
     };
 
     const startAnimation = () => {
+      if (!isEffectActive) return;
       cancelAnimationFrame(rafIdRef.current);
 
       let last = performance.now();
 
       const tick = (now: number) => {
-        if (!runningRef.current) return;
+        if (!runningRef.current || !isEffectActive) return;
         const dt = Math.min(0.05, (now - last) / 1000);
         last = now;
 
@@ -137,6 +141,7 @@ export function EmitterCanvas({
     loadCells();
 
     return () => {
+      isEffectActive = false;
       cancelAnimationFrame(rafIdRef.current);
     };
   }, [
