@@ -1,5 +1,8 @@
 import { BrowserWindow, BrowserView, ApplicationMenu } from "electrobun/bun";
 import net from "net";
+import os from "os";
+import fs from "fs";
+import path from "path";
 
 // ── Discord Rich Presence
 const DISCORD_CLIENT_ID = "1415226166607876157";
@@ -118,30 +121,26 @@ let win: BrowserWindow<any>;
 const rpc = BrowserView.defineRPC<any>({
     handlers: {
         requests: {
-            fs_readText: ({ path }: { path: string }) => {
-                const fs = require('fs');
-                const fullPath = require('path').resolve(process.env.HOME || process.env.USERPROFILE, '.caplayground', path);
+            fs_readText: ({ path: p }: { path: string }) => {
+                const fullPath = path.resolve(os.homedir(), '.caplayground', p);
                 if (!fs.existsSync(fullPath)) return null;
                 return fs.readFileSync(fullPath, 'utf8');
             },
-            fs_readBlob: ({ path }: { path: string }) => {
-                const fs = require('fs');
-                const fullPath = require('path').resolve(process.env.HOME || process.env.USERPROFILE, '.caplayground', path);
+            fs_readBlob: ({ path: p }: { path: string }) => {
+                const fullPath = path.resolve(os.homedir(), '.caplayground', p);
                 if (!fs.existsSync(fullPath)) return null;
                 return fs.readFileSync(fullPath).toString('base64');
             },
-            fs_listDir: ({ path }: { path: string }) => {
-                const fs = require('fs');
-                const fullPath = require('path').resolve(process.env.HOME || process.env.USERPROFILE, '.caplayground', path);
+            fs_listDir: ({ path: p }: { path: string }) => {
+                const fullPath = path.resolve(os.homedir(), '.caplayground', p);
                 if (!fs.existsSync(fullPath)) return [];
                 return fs.readdirSync(fullPath, { withFileTypes: true }).map((d: any) => ({
                     name: d.name,
                     kind: d.isDirectory() ? 'directory' : 'file'
                 }));
             },
-            fs_exists: ({ path }: { path: string }) => {
-                const fs = require('fs');
-                const fullPath = require('path').resolve(process.env.HOME || process.env.USERPROFILE, '.caplayground', path);
+            fs_exists: ({ path: p }: { path: string }) => {
+                const fullPath = path.resolve(os.homedir(), '.caplayground', p);
                 return fs.existsSync(fullPath);
             },
         },
@@ -156,28 +155,22 @@ const rpc = BrowserView.defineRPC<any>({
                 }
             },
             // FS Bridge for Desktop
-            fs_writeText: ({ path, text }: { path: string, text: string }) => {
-                const fs = require('fs');
-                const { dirname } = require('path');
-                const fullPath = require('path').resolve(process.env.HOME || process.env.USERPROFILE, '.caplayground', path);
-                fs.mkdirSync(dirname(fullPath), { recursive: true });
+            fs_writeText: ({ path: p, text }: { path: string, text: string }) => {
+                const fullPath = path.resolve(os.homedir(), '.caplayground', p);
+                fs.mkdirSync(path.dirname(fullPath), { recursive: true });
                 fs.writeFileSync(fullPath, text);
             },
-            fs_writeBlob: ({ path, base64 }: { path: string, base64: string }) => {
-                const fs = require('fs');
-                const { dirname } = require('path');
-                const fullPath = require('path').resolve(process.env.HOME || process.env.USERPROFILE, '.caplayground', path);
-                fs.mkdirSync(dirname(fullPath), { recursive: true });
-                fs.writeFileSync(fullPath, Buffer.from(base64, 'base64'));
+            fs_writeBlob: ({ path: p, base64 }: { path: string, base64: string }) => {
+                const fullPath = path.resolve(os.homedir(), '.caplayground', p);
+                fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+                fs.writeFileSync(fullPath, Buffer.from(base64, 'base64') as any);
             },
-            fs_mkdir: ({ path }: { path: string }) => {
-                const fs = require('fs');
-                const fullPath = require('path').resolve(process.env.HOME || process.env.USERPROFILE, '.caplayground', path);
+            fs_mkdir: ({ path: p }: { path: string }) => {
+                const fullPath = path.resolve(os.homedir(), '.caplayground', p);
                 fs.mkdirSync(fullPath, { recursive: true });
             },
-            fs_remove: ({ path, recursive }: { path: string, recursive: boolean }) => {
-                const fs = require('fs');
-                const fullPath = require('path').resolve(process.env.HOME || process.env.USERPROFILE, '.caplayground', path);
+            fs_remove: ({ path: p, recursive }: { path: string, recursive: boolean }) => {
+                const fullPath = path.resolve(os.homedir(), '.caplayground', p);
                 if (fs.existsSync(fullPath)) {
                     fs.rmSync(fullPath, { recursive });
                 }

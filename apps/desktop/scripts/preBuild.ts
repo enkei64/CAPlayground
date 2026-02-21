@@ -17,7 +17,7 @@ let apiHidden = false;
 if (existsSync(WEB_API)) {
     console.log("[preBuild] Temporarily hiding API routes...");
     rmSync(WEB_API_HIDDEN, { recursive: true, force: true });
-    await $`mv ${WEB_API} ${WEB_API_HIDDEN}`.quiet();
+    require('fs').renameSync(WEB_API, WEB_API_HIDDEN);
     apiHidden = true;
 }
 
@@ -25,11 +25,11 @@ try {
     console.log(`  WEB_ROOT: ${WEB_ROOT}`);
     console.log(`  Output:   ${WEB_OUT}`);
 
-    await $`cd ${WEB_ROOT} && NEXT_PUBLIC_DESKTOP=true npx next build`;
+    await $`bun run --cwd ${WEB_ROOT} build:desktop`;
 } finally {
     if (apiHidden) {
         console.log("[preBuild] Restoring API routes...");
-        await $`mv ${WEB_API_HIDDEN} ${WEB_API}`.quiet();
+        require('fs').renameSync(WEB_API_HIDDEN, WEB_API);
     }
 }
 
@@ -45,8 +45,11 @@ if (existsSync(VIEWS_APP)) {
 mkdirSync(VIEWS_APP, { recursive: true });
 cpSync(WEB_OUT, VIEWS_APP, { recursive: true });
 
-const htmlFiles = await $`find ${VIEWS_APP} -name "*.html"`.text();
-for (const htmlPath of htmlFiles.split("\n").filter(Boolean)) {
+const glob = new Bun.Glob("**/*.html");
+const htmlFiles = Array.from(glob.scanSync(VIEWS_APP));
+
+for (const relativeHtml of htmlFiles) {
+    const htmlPath = resolve(VIEWS_APP, relativeHtml);
     const txtPath = htmlPath.replace(/\.html$/, ".txt");
     const shadowPath = htmlPath + ".txt";
 
@@ -56,9 +59,6 @@ for (const htmlPath of htmlFiles.split("\n").filter(Boolean)) {
             console.log(`[preBuild] Creating shadow RSC file: ${shadowPath}`);
             cpSync(txtPath, shadowPath);
         }
-
-        const absoluteShadow = resolve(shadowPath);
-        console.log(`[preBuild] Absolute shadow path: ${absoluteShadow}`);
     } else {
         console.log(`[preBuild] WARNING: No RSC (.txt) found for ${htmlPath}`);
     }
