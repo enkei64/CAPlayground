@@ -1,79 +1,86 @@
 #!/usr/bin/env bun
 import { $ } from "bun";
-import { cpSync, existsSync, mkdirSync, rmSync } from "fs";
+import { cpSync, existsSync, mkdirSync, rmSync, symlinkSync } from "fs";
 import { resolve, dirname } from "path";
 
 const DESKTOP_ROOT = resolve(import.meta.dirname, "..");
 const WEB_ROOT = resolve(DESKTOP_ROOT, "..", "web");
-const WEB_OUT = resolve(WEB_ROOT, "out");
 const VIEWS_APP = resolve(DESKTOP_ROOT, "views", "app");
+const SHADOW_ROOT = resolve(DESKTOP_ROOT, ".shadow-web");
 
-const WEB_API = resolve(WEB_ROOT, "app", "api");
-const WEB_API_HIDDEN = resolve(WEB_ROOT, "app", "_api");
+console.log("[preBuild] Preparing Shadow Web environment for safe build...");
 
-console.log("[preBuild] Building Next.js static export...");
+if (existsSync(SHADOW_ROOT)) {
+    rmSync(SHADOW_ROOT, { recursive: true, force: true });
+}
+mkdirSync(SHADOW_ROOT, { recursive: true });
 
-let apiHidden = false;
-if (existsSync(WEB_API)) {
-    console.log("[preBuild] Temporarily hiding API routes...");
-    rmSync(WEB_API_HIDDEN, { recursive: true, ce: true });
-    require('fs').renameSync(WEB_API, WEB_API_HIDDEN);
-    apiHidden = true;
+try {
+    console.log("[preBuild] Syncing source files to shadow...");
+    await $`rsync -a --exclude=".next" --exclude="node_modules" --exclude="out" --exclude=".git" ${WEB_ROOT}/ ${SHADOW_ROOT}/`;
+
+    const webModules = resolve(WEB_ROOT, "node_modules");
+    const shadowModules = resolve(SHADOW_ROOT, "node_modules");
+    if (existsSync(webModules)) {
+        symlinkSync(webModules, shadowModules, "dir");
+    }
+} catch (e) {
+    console.error("[preBuild] Failed to prepare shadow environment:", e);
+    process.exit(1);
 }
 
-const pathsToHide = [
-    resolve(WEB_ROOT, "app", "page.tsx"),
-    resolve(WEB_ROOT, "app", "contributors"),
-    resolve(WEB_ROOT, "app", "roadmap"),
-    resolve(WEB_ROOT, "app", "docs"),
-    resolve(WEB_ROOT, "app", "privacy"),
-    resolve(WEB_ROOT, "app", "tos"),
-    resolve(WEB_ROOT, "app", "tendies-check"),
-    resolve(WEB_ROOT, "public", "featured.mp4"),
-    resolve(WEB_ROOT, "public", "app-dark.png"),
-    resolve(WEB_ROOT, "public", "app-light.png"),
+console.log("[preBuild] Applying desktop-specific modifications to shadow...");
+
+const SHADOW_API = resolve(SHADOW_ROOT, "app", "api");
+if (existsSync(SHADOW_API)) {
+    rmSync(SHADOW_API, { recursive: true, force: true });
+}
+
+const shadowPathsToHide = [
+    resolve(SHADOW_ROOT, "app", "page.tsx"),
+    resolve(SHADOW_ROOT, "app", "contributors"),
+    resolve(SHADOW_ROOT, "app", "roadmap"),
+    resolve(SHADOW_ROOT, "app", "docs"),
+    resolve(SHADOW_ROOT, "app", "privacy"),
+    resolve(SHADOW_ROOT, "app", "tos"),
+    resolve(SHADOW_ROOT, "app", "tendies-check"),
+    resolve(SHADOW_ROOT, "public", "featured.mp4"),
+    resolve(SHADOW_ROOT, "public", "app-dark.png"),
+    resolve(SHADOW_ROOT, "public", "app-light.png"),
 ];
 
-const hiddenPaths: { original: string, hidden: string }[] = [];
-for (const p of pathsToHide) {
+for (const p of shadowPathsToHide) {
     if (existsSync(p)) {
-        const hiddenPath = p + ".hidden_for_desktop";
-        require('fs').renameSync(p, hiddenPath);
-        hiddenPaths.push({ original: p, hidden: hiddenPath });
-        console.log(`[preBuild] Temporarily hid ${p.replace(WEB_ROOT, "")}`);
+        rmSync(p, { recursive: true, force: true });
+        console.log(`[preBuild] Removed ${p.replace(SHADOW_ROOT, "")} in shadow`);
     }
 }
 
 try {
-    console.log(`  WEB_ROOT: ${WEB_ROOT}`);
-    console.log(`  Output:   ${WEB_OUT}`);
+    console.log("[preBuild] Building Next.js static export in shadow...");
+    const shadowOut = resolve(SHADOW_ROOT, "out");
 
-    await $`bun run --cwd ${WEB_ROOT} build:desktop`;
-} finally {
-    if (apiHidden) {
-        console.log("[preBuild] Restoring API routes...");
-        require('fs').renameSync(WEB_API_HIDDEN, WEB_API);
+    await $`NEXT_PUBLIC_DESKTOP=true bun x next build`.cwd(SHADOW_ROOT);
+
+    if (!existsSync(shadowOut)) {
+        throw new Error("Build output 'out' not found in shadow.");
     }
 
-    for (const hp of hiddenPaths) {
-        if (existsSync(hp.hidden)) {
-            require('fs').renameSync(hp.hidden, hp.original);
-            console.log(`[preBuild] Restored ${hp.original.replace(WEB_ROOT, "")}`);
-        }
-    }
-}
 
-if (!existsSync(WEB_OUT)) {
-    console.error("[preBuild] ERROR: Next.js static export not found at", WEB_OUT);
-    console.error("  Make sure next.config.mjs has output: 'export' when NEXT_PUBLIC_DESKTOP is set.");
+    console.log("[preBuild] Copying build results to desktop views...");
+    if (existsSync(VIEWS_APP)) {
+        rmSync(VIEWS_APP, { recursive: true, force: true });
+    }
+    mkdirSync(VIEWS_APP, { recursive: true });
+    cpSync(shadowOut, VIEWS_APP, { recursive: true });
+
+} catch (e) {
+    console.error("[preBuild] Build failed in shadow environment:", e);
     process.exit(1);
-}
+} finally {
 
-if (existsSync(VIEWS_APP)) {
-    rmSync(VIEWS_APP, { recursive: true });
+    console.log("[preBuild] Cleaning up shadow environment...");
 }
-mkdirSync(VIEWS_APP, { recursive: true });
-cpSync(WEB_OUT, VIEWS_APP, { recursive: true });
 
 const glob = new Bun.Glob("**/*.html");
 const htmlFiles = Array.from(glob.scanSync(VIEWS_APP));
@@ -86,11 +93,8 @@ for (const relativeHtml of htmlFiles) {
     if (existsSync(txtPath)) {
         console.log(`[preBuild] Found RSC for ${htmlPath}: ${txtPath}`);
         if (!existsSync(shadowPath)) {
-            console.log(`[preBuild] Creating shadow RSC file: ${shadowPath}`);
             cpSync(txtPath, shadowPath);
         }
-    } else {
-        console.log(`[preBuild] WARNING: No RSC (.txt) found for ${htmlPath}`);
     }
 }
 
@@ -104,11 +108,8 @@ for (const mock of apiMocks) {
     if (!existsSync(mockPath)) {
         mkdirSync(dirname(mockPath), { recursive: true });
         require('fs').writeFileSync(mockPath, JSON.stringify({ success: true, mocked: true }));
-        console.log(`[preBuild] Created mock API file: ${mockPath}`);
     }
 }
-
-console.log("[preBuild] Done! Static export copied to views/app/");
 
 const BUILD_ROOT = resolve(DESKTOP_ROOT, "build");
 if (existsSync(BUILD_ROOT)) {
@@ -122,6 +123,8 @@ if (existsSync(BUILD_ROOT)) {
         }
     }
     if (removedCount > 0) {
-        console.log(`[preBuild] Stripped ${removedCount} unused CEF locales from build directory.`);
+        console.log(`[preBuild] Stripped ${removedCount} unused CEF locales.`);
     }
 }
+
+console.log("[preBuild] Done! Desktop build assets updated safely.");

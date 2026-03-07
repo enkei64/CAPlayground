@@ -135,8 +135,7 @@ async function resolveParent(root: FileSystemDirectoryHandle, fullPath: string, 
 
 export async function ensureDir(path: string): Promise<FileSystemDirectoryHandle | null> {
   if (IS_DESKTOP) {
-    bunMessage('fs_mkdir', { path });
-    return null;
+    return bunRequest('fs_mkdir', { path });
   }
   const root = await getRoot();
   if (!root) return null;
@@ -145,8 +144,7 @@ export async function ensureDir(path: string): Promise<FileSystemDirectoryHandle
 
 export async function writeText(path: string, text: string): Promise<void> {
   if (IS_DESKTOP) {
-    bunMessage('fs_writeText', { path, text });
-    return;
+    return bunRequest('fs_writeText', { path, text });
   }
   const root = await getRoot();
   if (!root) return;
@@ -160,8 +158,7 @@ export async function writeText(path: string, text: string): Promise<void> {
 export async function writeBlob(path: string, data: Blob | ArrayBuffer): Promise<void> {
   if (IS_DESKTOP) {
     const base64 = await blobToBase64(data);
-    bunMessage('fs_writeBlob', { path, base64 });
-    return;
+    return bunRequest('fs_writeBlob', { path, base64 });
   }
   const root = await getRoot();
   if (!root) return;
@@ -248,8 +245,7 @@ export async function exists(path: string): Promise<boolean> {
 
 export async function remove(path: string, opts: { recursive?: boolean } = {}): Promise<void> {
   if (IS_DESKTOP) {
-    bunMessage('fs_remove', { path, recursive: !!opts.recursive });
-    return;
+    return bunRequest('fs_remove', { path, recursive: !!opts.recursive });
   }
   try {
     const root = await getRoot();

@@ -11,6 +11,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase"
 import { ArrowLeft, Link as LinkIcon, Unlink } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import { DiscordPresence } from "@/components/discord-presence"
+import { remove } from "@/lib/fs"
 
 function GoogleColorIcon({ className }: { className?: string }) {
   return (
@@ -194,9 +195,7 @@ export default function AccountPage({ onBack }: { onBack?: () => void }) {
       const { error } = await supabase.auth.updateUser({ email: next })
       if (error) throw error
       setMessage("Verification email sent to update your email. You'll be signed out now; please sign back in after verifying.")
-      await fetch('/api/auth/signout', { method: 'POST' })
-      await supabase.auth.signOut()
-      window.location.href = process.env.NEXT_PUBLIC_DESKTOP === 'true' ? "signin.html" : "/signin"
+      await signOut()
     } catch (e: any) {
       setError(e.message ?? "Failed to update email")
     }
@@ -216,9 +215,22 @@ export default function AccountPage({ onBack }: { onBack?: () => void }) {
   }
 
   async function signOut() {
-    await fetch('/api/auth/signout', { method: 'POST' })
+    try {
+      if (process.env.NEXT_PUBLIC_DESKTOP !== 'true') {
+        await fetch('/api/auth/signout', { method: 'POST' })
+      } else {
+        await remove('session.json')
+      }
+    } catch (e) {
+      console.error("Sign out API error (ignoring):", e)
+    }
+
     await supabase.auth.signOut()
-    window.location.href = process.env.NEXT_PUBLIC_DESKTOP === 'true' ? "home.html" : "/"
+    if (process.env.NEXT_PUBLIC_DESKTOP === 'true') {
+      window.location.reload()
+    } else {
+      window.location.href = "/"
+    }
   }
 
   async function deleteAccount() {
@@ -241,9 +253,7 @@ export default function AccountPage({ onBack }: { onBack?: () => void }) {
         const body = await res.json().catch(() => ({}))
         throw new Error(body.error || `Delete failed with status ${res.status}`)
       }
-      await fetch('/api/auth/signout', { method: 'POST' })
-      await supabase.auth.signOut()
-      window.location.href = process.env.NEXT_PUBLIC_DESKTOP === 'true' ? "home.html" : "/"
+      await signOut()
     } catch (e: any) {
       setError(e.message ?? "Failed to delete account (ensure server is configured with SUPABASE_SERVICE_ROLE_KEY)")
     }

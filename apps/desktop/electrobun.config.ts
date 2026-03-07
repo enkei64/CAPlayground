@@ -5,6 +5,7 @@ export default {
         name: "CAPlayground",
         identifier: "com.caplayground.desktop",
         version: "1.0.0",
+        urlSchemes: ["caplayground"],
     },
     runtime: {
         exitOnLastWindowClosed: true,

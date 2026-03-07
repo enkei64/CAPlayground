@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { ExternalLink } from "@/components/external-link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,9 +21,12 @@ import { useTheme } from "next-themes";
 import { AUTH_ENABLED, getSupabaseBrowserClient } from "@/lib/supabase";
 import { DiscordPresence } from "@/components/discord-presence"
 
-export default function AuthPage() {
+function AuthInner() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const { theme, setTheme } = useTheme();
+  const searchParams = useSearchParams();
+  const isDesktop = searchParams.get("desktop") === "1";
+  const authRedirectSuffix = isDesktop ? "?desktop=1" : "";
 
   useEffect(() => {
     document.title = mode === "signin" ? "CAPlayground - Sign In" : "CAPlayground - Sign Up";
@@ -117,7 +122,13 @@ export default function AuthPage() {
         password,
       });
       if (error) throw error;
-      window.location.href = process.env.NEXT_PUBLIC_DESKTOP === 'true' ? "home.html" : "/";
+      if (process.env.NEXT_PUBLIC_DESKTOP === 'true') {
+        window.location.href = "home.html";
+      } else if (isDesktop) {
+        window.location.href = `/auth/success?desktop=1`;
+      } else {
+        window.location.href = "/";
+      }
     } catch (e: any) {
       setError(e.message ?? "Failed to sign in");
     } finally {
@@ -163,7 +174,7 @@ export default function AuthPage() {
       const origin = window.location.origin;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: `${origin}/auth/success` },
+        options: { redirectTo: `${origin}/auth/success${authRedirectSuffix}` },
       });
       if (error) throw error;
     } catch (e: any) {
@@ -179,7 +190,7 @@ export default function AuthPage() {
       const origin = window.location.origin;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "github",
-        options: { redirectTo: `${origin}/auth/success` },
+        options: { redirectTo: `${origin}/auth/success${authRedirectSuffix}` },
       });
       if (error) throw error;
     } catch (e: any) {
@@ -195,7 +206,7 @@ export default function AuthPage() {
       const origin = window.location.origin;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "discord",
-        options: { redirectTo: `${origin}/auth/success` },
+        options: { redirectTo: `${origin}/auth/success${authRedirectSuffix}` },
       });
       if (error) throw error;
     } catch (e: any) {
@@ -458,6 +469,18 @@ export default function AuthPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    }>
+      <AuthInner />
+    </Suspense>
   );
 }
 

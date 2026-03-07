@@ -42,3 +42,6 @@ next-env.d.ts
 
 # Desktop build overrides
 **/_api/
+**/.shadow-web/
+**/session.json
+**/.protocol_registered

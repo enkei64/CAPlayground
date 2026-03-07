@@ -2,11 +2,13 @@
 
 import { useEffect, useState, Suspense } from "react"
 import Image from "next/image"
-import { Home, Compass, User, BookOpen, X, Minus, Square, Folder, Settings, Heart, CheckCircle2 } from "lucide-react"
+import { Home, Compass, User, BookOpen, X, Minus, Square, Folder, Settings, Heart, CheckCircle2, LogIn, LogOut } from "lucide-react"
 import { ProjectsContent } from "@/app/projects/page"
 import { WallpapersGrid } from "@/app/wallpapers/WallpapersGrid"
 import AccountPage from "@/app/account/page"
 import { cn } from "@/lib/utils"
+import { getSupabaseBrowserClient } from "@/lib/supabase"
+import { readText, remove } from "@/lib/fs"
 
 export default function DesktopHome() {
     const [activeTab, setActiveTab] = useState<"home" | "projects" | "community" | "docs" | "account" | "settings">("home")
@@ -16,6 +18,42 @@ export default function DesktopHome() {
         }
         return "unknown";
     });
+    const [isSignedIn, setIsSignedIn] = useState(false);
+    const [username, setUsername] = useState<string | null>(null);
+
+    const restoreSession = async () => {
+        const supabase = getSupabaseBrowserClient();
+        const { data: existing } = await supabase.auth.getSession();
+        if (existing.session) {
+            setIsSignedIn(true);
+            const { data: user } = await supabase.auth.getUser();
+            setUsername((user.user as any)?.user_metadata?.username || user.user?.email || null);
+            return;
+        }
+        try {
+            const raw = await readText('session.json');
+            if (raw) {
+                const session = JSON.parse(raw);
+                if (session?.access_token && session?.refresh_token) {
+                    const { data, error } = await supabase.auth.setSession({
+                        access_token: session.access_token,
+                        refresh_token: session.refresh_token,
+                    });
+                    if (!error && data.session) {
+                        setIsSignedIn(true);
+                        const { data: user } = await supabase.auth.getUser();
+                        try {
+                            const { data: profile } = await supabase
+                                .from("profiles").select("username").eq("id", user.user!.id).maybeSingle();
+                            setUsername(profile?.username || user.user?.email || null);
+                        } catch {
+                            setUsername(user.user?.email || null);
+                        }
+                    }
+                }
+            }
+        } catch { }
+    };
 
     useEffect(() => {
         document.title = "CAPlayground";
@@ -24,7 +62,13 @@ export default function DesktopHome() {
             const p = (window as any).__electrobun?.platform || "unknown";
             setPlatform(p);
         }
-    }, [])
+
+        restoreSession();
+
+        const handleFocus = () => restoreSession();
+        window.addEventListener("focus", handleFocus);
+        return () => window.removeEventListener("focus", handleFocus);
+    }, []);
 
     const handleWindowControl = (action: "close" | "minimize" | "maximize") => {
         const bridge = (window as any).__electrobunBunBridge;
@@ -33,24 +77,34 @@ export default function DesktopHome() {
         }
     }
 
-    const handleDocsClick = () => {
-        if (typeof window !== "undefined") {
-            const eb = (window as any).__electrobun;
-            const bridge = (window as any).__electrobunBunBridge;
-            if (eb?.messages?.openExternal) {
-                eb.messages.openExternal("https://docs.enkei64.xyz");
-            } else if (eb?.openExternal) {
-                eb.openExternal("https://docs.enkei64.xyz");
-            } else if (bridge) {
-                bridge.postMessage(JSON.stringify({
-                    type: 'message',
-                    id: 'openExternal',
-                    payload: "https://docs.enkei64.xyz"
-                }));
-            } else {
-                window.open("https://docs.enkei64.xyz", "_blank");
-            }
-        }
+    const handleDocsClick = () => openExternal("https://docs.enkei64.xyz")
+
+    const openExternal = (url: string) => {
+        if (typeof window === "undefined") return;
+        const eb = (window as any).__electrobun;
+        const bridge = (window as any).__electrobunBunBridge;
+        if (eb?.messages?.openExternal) eb.messages.openExternal(url);
+        else if (eb?.openExternal) eb.openExternal(url);
+        else if (bridge) bridge.postMessage(JSON.stringify({ type: 'message', id: 'openExternal', payload: url }));
+        else window.open(url, "_blank");
+    }
+
+    const handleSignIn = () => {
+        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://caplayground.vercel.app";
+        openExternal(`${baseUrl}/auth/desktop-authorize`);
+    }
+
+    const handleSignOut = async () => {
+        const supabase = getSupabaseBrowserClient();
+        await supabase.auth.signOut();
+        try {
+            await remove('session.json');
+        } catch { }
+
+        setIsSignedIn(false);
+        setUsername(null);
+
+        window.location.reload();
     }
 
     return (
@@ -176,18 +230,28 @@ export default function DesktopHome() {
                         <Settings className="h-4 w-4" />
                         Settings
                     </button>
-                    <button
-                        onClick={() => setActiveTab("account")}
-                        className={cn(
-                            "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium",
-                            activeTab === "account"
-                                ? "bg-accent text-accent-foreground shadow-sm"
-                                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                        )}
-                    >
-                        <User className="h-4 w-4" />
-                        Account
-                    </button>
+                    {isSignedIn ? (
+                        <button
+                            onClick={() => setActiveTab("account")}
+                            className={cn(
+                                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium",
+                                activeTab === "account"
+                                    ? "bg-accent text-accent-foreground shadow-sm"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                            )}
+                        >
+                            <User className="h-4 w-4 flex-shrink-0" />
+                            <span className="truncate">{username || "Account"}</span>
+                        </button>
+                    ) : (
+                        <button
+                            onClick={handleSignIn}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium text-accent hover:bg-accent/10"
+                        >
+                            <LogIn className="h-4 w-4 flex-shrink-0" />
+                            Sign In
+                        </button>
+                    )}
                 </div>
             </div>
 

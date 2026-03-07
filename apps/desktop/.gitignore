@@ -15,3 +15,7 @@
 # static views (copied from apps/web/out)
 /views/app
 /views/**/*.html.txt
+
+# build system
+/.shadow-web/
+/session.json

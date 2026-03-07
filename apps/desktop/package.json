@@ -6,10 +6,10 @@
   },
   "private": true,
   "scripts": {
-    "dev": "bun ./scripts/preBuild.ts && bun x electrobun build && electrobun dev",
+    "dev": "bun x electrobun build && electrobun dev",
     "start": "electrobun dev",
-    "dist": "bun ./scripts/preBuild.ts && electrobun build --env=stable",
-    "build:canary": "bun ./scripts/preBuild.ts && electrobun build --env=canary"
+    "dist": "electrobun build --env=stable",
+    "build:canary": "electrobun build --env=canary"
   },
   "trustedDependencies": [
     "register-scheme"
