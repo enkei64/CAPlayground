@@ -36,8 +36,17 @@ export default function DesktopHome() {
     const handleDocsClick = () => {
         if (typeof window !== "undefined") {
             const eb = (window as any).__electrobun;
-            if (eb?.openExternal) {
+            const bridge = (window as any).__electrobunBunBridge;
+            if (eb?.messages?.openExternal) {
+                eb.messages.openExternal("https://docs.enkei64.xyz");
+            } else if (eb?.openExternal) {
                 eb.openExternal("https://docs.enkei64.xyz");
+            } else if (bridge) {
+                bridge.postMessage(JSON.stringify({
+                    type: 'message',
+                    id: 'openExternal',
+                    payload: "https://docs.enkei64.xyz"
+                }));
             } else {
                 window.open("https://docs.enkei64.xyz", "_blank");
             }
@@ -328,8 +337,17 @@ export default function DesktopHome() {
                                                     const url = 'https://caplayground.vercel.app/contributors';
                                                     if (typeof window !== "undefined") {
                                                         const eb = (window as any).__electrobun;
-                                                        if (eb?.openExternal) {
+                                                        const bridge = (window as any).__electrobunBunBridge;
+                                                        if (eb?.messages?.openExternal) {
+                                                            eb.messages.openExternal(url);
+                                                        } else if (eb?.openExternal) {
                                                             eb.openExternal(url);
+                                                        } else if (bridge) {
+                                                            bridge.postMessage(JSON.stringify({
+                                                                type: 'message',
+                                                                id: 'openExternal',
+                                                                payload: url
+                                                            }));
                                                         } else {
                                                             window.open(url, '_blank');
                                                         }

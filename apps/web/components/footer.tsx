@@ -2,6 +2,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Wordmark } from "@/components/wordmark"
+import { ExternalLink } from "@/components/external-link"
 
 export function Footer() {
   return (
@@ -16,11 +17,11 @@ export function Footer() {
                 <span className="inline-flex items-center gap-2">Get Started</span>
               </Button>
             </Link>
-            <Link href="https://github.com/CAPlayground/CAPlayground" target="_blank" rel="noopener noreferrer">
+            <ExternalLink href="https://github.com/CAPlayground/CAPlayground" target="_blank" rel="noopener noreferrer">
               <Button variant="outline" className="px-6">
                 <span className="inline-flex items-center gap-2">View GitHub</span>
               </Button>
-            </Link>
+            </ExternalLink>
           </div>
         </div>
 
@@ -56,18 +57,18 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="font-heading font-semibold">Resources</h3>
             <div className="space-y-2">
-              <Link href="/docs" className="block text-sm text-muted-foreground hover:text-accent transition-colors">
+              <ExternalLink href="/docs" className="block text-sm text-muted-foreground hover:text-accent transition-colors">
                 Documentation
-              </Link>
-              <Link href="/roadmap" className="block text-sm text-muted-foreground hover:text-accent transition-colors">
+              </ExternalLink>
+              <ExternalLink href="/roadmap" className="block text-sm text-muted-foreground hover:text-accent transition-colors">
                 Roadmap
-              </Link>
-              <Link
+              </ExternalLink>
+              <ExternalLink
                 href="/tendies-check"
                 className="block text-sm text-muted-foreground hover:text-accent transition-colors"
               >
                 Tendies Checker
-              </Link>
+              </ExternalLink>
             </div>
           </div>
 
@@ -75,18 +76,18 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="font-heading font-semibold">Community</h3>
             <div className="space-y-2">
-              <Link
+              <ExternalLink
                 href="/contributors"
                 className="block text-sm text-muted-foreground hover:text-accent transition-colors"
               >
                 Contributors
-              </Link>
-              <Link href="https://github.com/CAPlayground/CAPlayground" className="block text-sm text-muted-foreground hover:text-accent transition-colors">
+              </ExternalLink>
+              <ExternalLink href="https://github.com/CAPlayground/CAPlayground" className="block text-sm text-muted-foreground hover:text-accent transition-colors">
                 GitHub
-              </Link>
-              <Link href="https://discord.gg/8rW3SHsK8b" className="block text-sm text-muted-foreground hover:text-accent transition-colors">
+              </ExternalLink>
+              <ExternalLink href="https://discord.gg/8rW3SHsK8b" className="block text-sm text-muted-foreground hover:text-accent transition-colors">
                 Discord
-              </Link>
+              </ExternalLink>
             </div>
           </div>
         </div>
@@ -95,12 +96,12 @@ export function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-sm text-muted-foreground">© 2025 CAPlayground. All rights reserved.</p>
             <div className="flex space-x-6">
-              <Link href="/privacy" className="text-sm text-muted-foreground hover:text-accent transition-colors">
+              <ExternalLink href="/privacy" className="text-sm text-muted-foreground hover:text-accent transition-colors">
                 Privacy Policy
-              </Link>
-              <Link href="/tos" className="text-sm text-muted-foreground hover:text-accent transition-colors">
+              </ExternalLink>
+              <ExternalLink href="/tos" className="text-sm text-muted-foreground hover:text-accent transition-colors">
                 Terms of Service
-              </Link>
+              </ExternalLink>
             </div>
           </div>
           <div className="mt-12">

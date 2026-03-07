@@ -16,9 +16,32 @@ console.log("[preBuild] Building Next.js static export...");
 let apiHidden = false;
 if (existsSync(WEB_API)) {
     console.log("[preBuild] Temporarily hiding API routes...");
-    rmSync(WEB_API_HIDDEN, { recursive: true, force: true });
+    rmSync(WEB_API_HIDDEN, { recursive: true, ce: true });
     require('fs').renameSync(WEB_API, WEB_API_HIDDEN);
     apiHidden = true;
+}
+
+const pathsToHide = [
+    resolve(WEB_ROOT, "app", "page.tsx"),
+    resolve(WEB_ROOT, "app", "contributors"),
+    resolve(WEB_ROOT, "app", "roadmap"),
+    resolve(WEB_ROOT, "app", "docs"),
+    resolve(WEB_ROOT, "app", "privacy"),
+    resolve(WEB_ROOT, "app", "tos"),
+    resolve(WEB_ROOT, "app", "tendies-check"),
+    resolve(WEB_ROOT, "public", "featured.mp4"),
+    resolve(WEB_ROOT, "public", "app-dark.png"),
+    resolve(WEB_ROOT, "public", "app-light.png"),
+];
+
+const hiddenPaths: { original: string, hidden: string }[] = [];
+for (const p of pathsToHide) {
+    if (existsSync(p)) {
+        const hiddenPath = p + ".hidden_for_desktop";
+        require('fs').renameSync(p, hiddenPath);
+        hiddenPaths.push({ original: p, hidden: hiddenPath });
+        console.log(`[preBuild] Temporarily hid ${p.replace(WEB_ROOT, "")}`);
+    }
 }
 
 try {
@@ -30,6 +53,13 @@ try {
     if (apiHidden) {
         console.log("[preBuild] Restoring API routes...");
         require('fs').renameSync(WEB_API_HIDDEN, WEB_API);
+    }
+
+    for (const hp of hiddenPaths) {
+        if (existsSync(hp.hidden)) {
+            require('fs').renameSync(hp.hidden, hp.original);
+            console.log(`[preBuild] Restored ${hp.original.replace(WEB_ROOT, "")}`);
+        }
     }
 }
 

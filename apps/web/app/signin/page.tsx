@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ExternalLink } from "@/components/external-link";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -388,13 +389,13 @@ export default function AuthPage() {
                 {error && <p className="text-sm text-red-500">{error}</p>}
                 <p className="text-xs text-muted-foreground">
                   By signing up, you agree to our{" "}
-                  <Link href="/tos" className="underline">
+                  <ExternalLink href="/tos" className="underline">
                     Terms of Service
-                  </Link>{" "}
+                  </ExternalLink>{" "}
                   and{" "}
-                  <Link href="/privacy" className="underline">
+                  <ExternalLink href="/privacy" className="underline">
                     Privacy Policy
-                  </Link>
+                  </ExternalLink>
                   . You must be at least 13 years old, or the minimum age of
                   digital consent in your country.
                 </p>

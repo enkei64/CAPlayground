@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { ExternalLink } from "@/components/external-link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
@@ -145,15 +146,15 @@ export function Navigation() {
 
             {/* Desktop Navigation */}
             <div className={`hidden min-[1045px]:flex items-center justify-center gap-6 justify-self-center ${IS_DESKTOP ? 'electrobun-webkit-app-region-no-drag' : ''}`}>
-              <Link href="/docs" className="text-foreground hover:text-accent transition-colors">
+              <ExternalLink href="/docs" className="text-foreground hover:text-accent transition-colors">
                 Docs
-              </Link>
-              <Link href="/contributors" className="text-foreground hover:text-accent transition-colors">
+              </ExternalLink>
+              <ExternalLink href="/contributors" className="text-foreground hover:text-accent transition-colors">
                 Contributors
-              </Link>
-              <Link href="/roadmap" className="text-foreground hover:text-accent transition-colors">
+              </ExternalLink>
+              <ExternalLink href="/roadmap" className="text-foreground hover:text-accent transition-colors">
                 Roadmap
-              </Link>
+              </ExternalLink>
               <Link href="/wallpapers" className="text-foreground hover:text-accent transition-colors">
                 Wallpapers
               </Link>
@@ -269,20 +270,20 @@ export function Navigation() {
             >
               <div className="flex flex-col space-y-1 py-2">
                 {/* top quick links */}
-                <Link
+                <ExternalLink
                   href="/docs"
                   className="text-foreground hover:text-accent hover:bg-muted/50 transition-all duration-200 py-3 px-6 rounded-lg mx-2 text-4xl"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Docs
-                </Link>
-                <Link
+                </ExternalLink>
+                <ExternalLink
                   href="/roadmap"
                   className="text-foreground hover:text-accent hover:bg-muted/50 transition-all duration-200 py-3 px-6 rounded-lg mx-2 text-4xl"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Roadmap
-                </Link>
+                </ExternalLink>
                 <Link
                   href="/wallpapers"
                   className="text-foreground hover:text-accent hover:bg-muted/50 transition-all duration-200 py-3 px-6 rounded-lg mx-2 text-4xl"
@@ -290,13 +291,13 @@ export function Navigation() {
                 >
                   Wallpapers
                 </Link>
-                <Link
+                <ExternalLink
                   href="/contributors"
                   className="text-foreground hover:text-accent hover:bg-muted/50 transition-all duration-200 py-3 px-6 rounded-lg mx-2 text-4xl"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Contributors
-                </Link>
+                </ExternalLink>
                 {/* bottom primary actions */}
                 <div className="px-2 pt-2 pb-3 my-2">
                   <div className="flex gap-3">

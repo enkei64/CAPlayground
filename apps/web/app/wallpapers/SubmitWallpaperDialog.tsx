@@ -23,6 +23,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import Link from "next/link"
+import { ExternalLink } from "@/components/external-link"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Octokit } from "octokit"
 import { getSupabaseBrowserClient } from "@/lib/supabase"
@@ -618,7 +619,7 @@ export function SubmitWallpaperDialog({ open, onOpenChange, username = "Anonymou
             </div>
 
             {prUrl && (
-              <a
+              <ExternalLink
                 href={prUrl}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -626,7 +627,7 @@ export function SubmitWallpaperDialog({ open, onOpenChange, username = "Anonymou
               >
                 <Github className="h-4 w-4" />
                 View Pull Request
-              </a>
+              </ExternalLink>
             )}
 
             <Button onClick={handleCancel} className="w-full sm:w-auto min-w-[120px]">
