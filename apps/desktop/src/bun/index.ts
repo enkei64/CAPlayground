@@ -5,30 +5,15 @@ import fs from "fs";
 import path from "path";
 import { execSync, spawn } from "child_process";
 
-// ── Deep Link / Protocol Handler ──────────────────────────────────────────────
-//
-// The app registers itself as the handler for caplayground:// URIs.
-// When the OS browser redirects to:
-//   caplayground://auth#access_token=...&refresh_token=...
-// the OS launches this binary with the URI as an argument.
-// We parse the tokens and save them to ~/.caplayground/session.json.
-//
-// Security note: process.argv is only readable by the same OS user account,
-// equivalent to any other program the user runs. Tokens are read immediately
-// and the reference discarded. The session file is written to the user's home
-// directory which is only readable by that user.
 
 const APP_DATA_DIR = path.join(os.homedir(), ".caplayground");
 const SESSION_FILE = path.join(APP_DATA_DIR, "session.json");
 const PROTOCOL_SCHEME = "caplayground";
 
-// Locate the binary that should be registered as the protocol handler.
 function getAppExecutablePath(): string {
     const bunExe = process.execPath;
     const binDir = path.dirname(bunExe);
 
-    // On Linux/Windows, the Electrobun build puts a launcher binary in bin/
-    // or next to the bin/ directory.
     const candidates = [
         path.join(binDir, "launcher"),
         path.join(binDir, "CAPlayground"),
@@ -41,8 +26,6 @@ function getAppExecutablePath(): string {
         if (fs.existsSync(c)) return path.resolve(c);
     }
 
-    // Fallback if we can't find a wrapper: use bun but we'd need to pass the script path.
-    // However, electrobun build usually provides the launcher.
     return bunExe;
 }
 
@@ -57,9 +40,6 @@ function registerProtocolHandlerLinux() {
         fs.mkdirSync(appDir, { recursive: true });
         fs.mkdirSync(capBinDir, { recursive: true });
 
-        // On Linux, the Electrobun launcher sets LD_PRELOAD. 
-        // For our protocol handler to work correctly (especially for CEF/Chrome),
-        // we should do the same if we're calling bun directly.
         const wrapperPath = path.join(capBinDir, "caplayground-handler");
         const wrapperContent = [
             "#!/bin/bash",
@@ -86,7 +66,6 @@ function registerProtocolHandlerLinux() {
         const desktopFile = path.join(appDir, "caplayground-handler.desktop");
         fs.writeFileSync(desktopFile, desktopContent);
 
-        // Register the mime handler with xdg-mime
         try { execSync(`xdg-mime default caplayground-handler.desktop x-scheme-handler/${PROTOCOL_SCHEME}`, { stdio: "ignore" }); } catch { }
         try { execSync(`update-desktop-database "${appDir}"`, { stdio: "ignore" }); } catch { }
         logDebug(`Registered protocol handler on Linux (${desktopFile})`);
@@ -99,7 +78,6 @@ function registerProtocolHandlerLinux() {
 function registerProtocolHandlerWindows() {
     try {
         const execPath = getAppExecutablePath();
-        // Write registry keys via reg.exe
         const regKey = `HKCU\\Software\\Classes\\${PROTOCOL_SCHEME}`;
         execSync(`reg add "${regKey}" /ve /d "URL:${PROTOCOL_SCHEME} Protocol" /f`, { stdio: "ignore" });
         execSync(`reg add "${regKey}" /v "URL Protocol" /d "" /f`, { stdio: "ignore" });
@@ -111,7 +89,6 @@ function registerProtocolHandlerWindows() {
 }
 
 function ensureProtocolHandlerRegistered() {
-    // Track whether we have already registered this version to avoid re-running every launch
     const flagFile = path.join(APP_DATA_DIR, ".protocol_registered");
     const execPath = getAppExecutablePath();
     let alreadyDone = false;
@@ -124,7 +101,6 @@ function ensureProtocolHandlerRegistered() {
 
     if (process.platform === "linux") registerProtocolHandlerLinux();
     else if (process.platform === "win32") registerProtocolHandlerWindows();
-    // macOS: handled via Info.plist CFBundleURLTypes in the build config — no runtime registration needed
 
     fs.mkdirSync(APP_DATA_DIR, { recursive: true });
     fs.writeFileSync(flagFile, JSON.stringify({ execPath, registeredAt: Date.now() }));
@@ -133,7 +109,6 @@ function ensureProtocolHandlerRegistered() {
 function parseDeepLinkArg(arg: string): { access_token: string; refresh_token: string; expires_in: number } | null {
     try {
         if (!arg.startsWith(`${PROTOCOL_SCHEME}://auth`)) return null;
-        // Tokens are in the fragment (#) — convert to query params for URL parsing
         const normalised = arg.replace("#", "?").replace(`${PROTOCOL_SCHEME}://auth`, "https://x.invalid/auth");
         const u = new URL(normalised);
         const access_token = u.searchParams.get("access_token");
@@ -157,7 +132,6 @@ function saveSession(tokens: { access_token: string; refresh_token: string; expi
     console.log("[DeepLink] Session saved to", SESSION_FILE);
 }
 
-// Check argv for a deep link (happens when OS relaunches app via protocol handler)
 let pendingDeepLinkSession: { access_token: string; refresh_token: string; expires_in: number } | null = null;
 let isDeepLinkLaunch = false;
 
@@ -183,25 +157,33 @@ for (const arg of process.argv) {
     }
 }
 
-// Ensure CEF and AppData directories exist to prevent initialization errors
 try {
     fs.mkdirSync(APP_DATA_DIR, { recursive: true });
-    // This sub-path is where CEF tries to create its profile/partition
     const cefCachePath = path.join(os.homedir(), ".cache", "com.caplayground.desktop");
     fs.mkdirSync(cefCachePath, { recursive: true });
 } catch (e) {
     console.warn("[Init] Failed to ensure directories exist:", e);
 }
 
-// Register our protocol handler (safe to call on every launch — checks flag file)
 ensureProtocolHandlerRegistered();
 
-// If this instance was launched JUST to handle a deep link, and we suspect
-// the app is already running, we can exit early. 
-// For now, let's just exit if it was a deep link to avoid double-windows,
-// assuming the user will click back to the main app.
-if (isDeepLinkLaunch) {
-    console.log("[DeepLink] Helper instance exiting after saving session.");
+let otherInstanceRunning = false;
+const INSTANCE_LOCK_FILE = path.join(APP_DATA_DIR, ".instance_lock");
+
+try {
+    const lockFd = fs.openSync(INSTANCE_LOCK_FILE, 'wx');
+    fs.writeFileSync(lockFd, String(process.pid));
+    fs.closeSync(lockFd);
+    
+    process.on('exit', () => {
+        try { fs.unlinkSync(INSTANCE_LOCK_FILE); } catch { }
+    });
+} catch (e) {
+    otherInstanceRunning = true;
+}
+
+if (isDeepLinkLaunch && otherInstanceRunning) {
+    console.log("[DeepLink] Another instance is running, helper exiting after saving session.");
     process.exit(0);
 }
 
@@ -320,7 +302,6 @@ function connectDiscord(socketIndex = 0) {
             console.log("[Discord RPC] Connection closed, retrying in 15s...");
             setTimeout(() => connectDiscord(0), 15000);
         } else if (isScanningDiscord) {
-            // We were scanning and this index failed, try next
             connectDiscord(socketIndex + 1);
         }
     });
@@ -328,7 +309,6 @@ function connectDiscord(socketIndex = 0) {
 
 connectDiscord();
 
-// Define the RPC schema    
 type MyRPC = {
     bun: {
         messages: {
@@ -344,7 +324,6 @@ type MyRPC = {
 
 let win: BrowserWindow<any>;
 
-// Define RPC handlers
 const rpc = BrowserView.defineRPC<any>({
     handlers: {
         requests: {
@@ -370,7 +349,6 @@ const rpc = BrowserView.defineRPC<any>({
                 const fullPath = path.resolve(os.homedir(), '.caplayground', p);
                 return fs.existsSync(fullPath);
             },
-            // Read the saved auth session from disk (used by the webview on launch)
             fs_readSession: () => {
                 if (!fs.existsSync(SESSION_FILE)) return null;
                 try {
@@ -379,7 +357,6 @@ const rpc = BrowserView.defineRPC<any>({
                     return null;
                 }
             },
-            // FS Bridge for Desktop (Moved to requests so they can be awaited)
             fs_writeText: ({ path: p, text }: { path: string, text: string }) => {
                 const fullPath = path.resolve(os.homedir(), '.caplayground', p);
                 fs.mkdirSync(path.dirname(fullPath), { recursive: true });
