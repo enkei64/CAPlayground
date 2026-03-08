@@ -22,6 +22,7 @@ export default function DesktopHome() {
     });
     const [isSignedIn, setIsSignedIn] = useState(false);
     const [username, setUsername] = useState<string | null>(null);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     const presenceDetails = {
         home: "Browsing home",
@@ -155,12 +156,19 @@ export default function DesktopHome() {
             )}
 
             {/* Sidebar */}
-            <div className="w-64 flex-shrink-0 border-r border-border bg-card/50 flex flex-col z-40 relative">
+            <div className={cn(
+                "flex-shrink-0 border-r border-border bg-card/50 flex flex-col z-40 relative transition-all duration-300",
+                sidebarCollapsed ? "w-16" : "w-64"
+            )}>
 
 
                 {/* Header with Logo */}
                 <div className="h-16 flex items-center px-4">
-                    <div className="flex items-center gap-2 group/logo flex-shrink-0">
+                    <button
+                        onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                        className="flex items-center gap-2 group/logo flex-shrink-0 hover:opacity-80 transition-opacity"
+                        title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                    >
                         <div className="relative w-8 h-8 rounded-xl overflow-hidden shadow-sm">
                             <Image
                                 src="/icon-light.png"
@@ -175,8 +183,10 @@ export default function DesktopHome() {
                                 className="object-cover hidden dark:block"
                             />
                         </div>
-                        <span className="font-heading font-bold text-lg tracking-tight">CAPlayground</span>
-                    </div>
+                        {!sidebarCollapsed && (
+                            <span className="font-heading font-bold text-lg tracking-tight">CAPlayground</span>
+                        )}
+                    </button>
                 </div>
 
                 {/* Navigation */}
@@ -184,38 +194,44 @@ export default function DesktopHome() {
                     <button
                         onClick={() => setActiveTab("home")}
                         className={cn(
-                            "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium",
+                            "w-full flex items-center gap-3 rounded-lg transition-colors text-sm font-medium",
+                            sidebarCollapsed ? "justify-center px-3 py-2.5" : "px-3 py-2.5",
                             activeTab === "home"
                                 ? "bg-accent text-accent-foreground shadow-sm"
                                 : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                         )}
+                        title={sidebarCollapsed ? "Home" : undefined}
                     >
-                        <Home className="h-4 w-4" />
-                        Home
+                        <Home className="h-4 w-4 flex-shrink-0" />
+                        {!sidebarCollapsed && "Home"}
                     </button>
                     <button
                         onClick={() => setActiveTab("projects")}
                         className={cn(
-                            "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium",
+                            "w-full flex items-center gap-3 rounded-lg transition-colors text-sm font-medium",
+                            sidebarCollapsed ? "justify-center px-3 py-2.5" : "px-3 py-2.5",
                             activeTab === "projects"
                                 ? "bg-accent text-accent-foreground shadow-sm"
                                 : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                         )}
+                        title={sidebarCollapsed ? "Projects" : undefined}
                     >
-                        <Folder className="h-4 w-4" />
-                        Projects
+                        <Folder className="h-4 w-4 flex-shrink-0" />
+                        {!sidebarCollapsed && "Projects"}
                     </button>
                     <button
                         onClick={() => setActiveTab("community")}
                         className={cn(
-                            "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium",
+                            "w-full flex items-center gap-3 rounded-lg transition-colors text-sm font-medium",
+                            sidebarCollapsed ? "justify-center px-3 py-2.5" : "px-3 py-2.5",
                             activeTab === "community"
                                 ? "bg-accent text-accent-foreground shadow-sm"
                                 : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                         )}
+                        title={sidebarCollapsed ? "Community" : undefined}
                     >
-                        <Compass className="h-4 w-4" />
-                        Community
+                        <Compass className="h-4 w-4 flex-shrink-0" />
+                        {!sidebarCollapsed && "Community"}
                     </button>
                 </div>
 
@@ -224,45 +240,55 @@ export default function DesktopHome() {
                     <button
                         onClick={handleDocsClick}
                         className={cn(
-                            "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium",
+                            "w-full flex items-center gap-3 rounded-lg transition-colors text-sm font-medium",
+                            sidebarCollapsed ? "justify-center px-3 py-2.5" : "px-3 py-2.5",
                             "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                         )}
+                        title={sidebarCollapsed ? "Documentation" : undefined}
                     >
-                        <BookOpen className="h-4 w-4" />
-                        Documentation
+                        <BookOpen className="h-4 w-4 flex-shrink-0" />
+                        {!sidebarCollapsed && "Documentation"}
                     </button>
                     <button
                         onClick={() => setActiveTab("settings")}
                         className={cn(
-                            "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium",
+                            "w-full flex items-center gap-3 rounded-lg transition-colors text-sm font-medium",
+                            sidebarCollapsed ? "justify-center px-3 py-2.5" : "px-3 py-2.5",
                             activeTab === "settings"
                                 ? "bg-accent text-accent-foreground shadow-sm"
                                 : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                         )}
+                        title={sidebarCollapsed ? "Settings" : undefined}
                     >
-                        <Settings className="h-4 w-4" />
-                        Settings
+                        <Settings className="h-4 w-4 flex-shrink-0" />
+                        {!sidebarCollapsed && "Settings"}
                     </button>
                     {isSignedIn ? (
                         <button
                             onClick={() => setActiveTab("account")}
                             className={cn(
-                                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium",
+                                "w-full flex items-center gap-3 rounded-lg transition-colors text-sm font-medium",
+                                sidebarCollapsed ? "justify-center px-3 py-2.5" : "px-3 py-2.5",
                                 activeTab === "account"
                                     ? "bg-accent text-accent-foreground shadow-sm"
                                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                             )}
+                            title={sidebarCollapsed ? username || "Account" : undefined}
                         >
                             <User className="h-4 w-4 flex-shrink-0" />
-                            <span className="truncate">{username || "Account"}</span>
+                            {!sidebarCollapsed && <span className="truncate">{username || "Account"}</span>}
                         </button>
                     ) : (
                         <button
                             onClick={handleSignIn}
-                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium text-accent hover:bg-accent/10"
+                            className={cn(
+                                "w-full flex items-center gap-3 rounded-lg transition-colors text-sm font-medium text-accent hover:bg-accent/10",
+                                sidebarCollapsed ? "justify-center px-3 py-2.5" : "px-3 py-2.5"
+                            )}
+                            title={sidebarCollapsed ? "Sign In" : undefined}
                         >
                             <LogIn className="h-4 w-4 flex-shrink-0" />
-                            Sign In
+                            {!sidebarCollapsed && "Sign In"}
                         </button>
                     )}
                 </div>
