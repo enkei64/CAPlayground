@@ -436,6 +436,20 @@ win = new BrowserWindow<any>({
     rpc
 });
 
+// Fix for UI being cut off on tiling window managers
+if (process.platform === "linux") {
+    setTimeout(() => {
+        try {
+            if (!win.isMaximized()) {
+                win.maximize();
+                setTimeout(() => win.unmaximize(), 50);
+            }
+        } catch (e) {
+            console.warn("[Init] Failed to trigger resize for tiling WM:", e);
+        }
+    }, 100);
+}
+
 if (process.platform === "darwin") {
     ApplicationMenu.setApplicationMenu([
         {
