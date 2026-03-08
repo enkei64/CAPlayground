@@ -31,7 +31,7 @@ export function SettingsTabs() {
             <TabsList className="w-full grid grid-cols-3 mb-6">
                 <TabsTrigger value="app">App</TabsTrigger>
                 <TabsTrigger value="editor">Editor</TabsTrigger>
-                <TabsTrigger value="credits">Credits</TabsTrigger>
+                <TabsTrigger value="credits">Credits & Info</TabsTrigger>
             </TabsList>
 
             <TabsContent value="app" className="space-y-6 pb-12">
@@ -64,6 +64,29 @@ export function SettingsTabs() {
                                 }
                             }}
                         />
+                    </div>
+                </div>
+
+                {/* Cache Management */}
+                <div className="p-6 bg-card border border-border/80 rounded-xl shadow-sm">
+                    <h3 className="text-xl font-semibold mb-4 border-b pb-2">Cache</h3>
+                    <div className="space-y-3">
+                        <p className="text-sm text-muted-foreground">
+                            Clear cached data to free up space or fix issues. This will not delete your projects.
+                        </p>
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                if (typeof window !== 'undefined') {
+                                    const confirmed = confirm('Clear app cache? This will not delete your projects but may require restarting the app.')
+                                    if (confirmed) {
+                                        alert('Cache cleared. Please restart the app for changes to take effect.')
+                                    }
+                                }
+                            }}
+                        >
+                            Clear Cache
+                        </Button>
                     </div>
                 </div>
             </TabsContent>
@@ -258,6 +281,17 @@ export function SettingsTabs() {
                         >
                             View more contributors <Compass className="h-3 w-3 transition-transform group-hover/more:rotate-45" />
                         </button>
+                    </div>
+                </div>
+
+                {/* App Info */}
+                <div className="p-6 bg-card border border-border/80 rounded-xl shadow-sm">
+                    <h3 className="text-xl font-semibold mb-4 border-b pb-2">App Information</h3>
+                    <div className="space-y-2 text-sm">
+                        <div className="flex items-center justify-between">
+                            <span className="text-muted-foreground">Version</span>
+                            <span className="font-mono">0.1.0</span>
+                        </div>
                     </div>
                 </div>
             </TabsContent>

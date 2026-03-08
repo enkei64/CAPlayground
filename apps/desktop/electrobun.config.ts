@@ -4,7 +4,7 @@ export default {
     app: {
         name: "CAPlayground",
         identifier: "com.caplayground.desktop",
-        version: "1.0.0",
+        version: "0.1.0",
         urlSchemes: ["caplayground"],
     },
     runtime: {

@@ -328,13 +328,6 @@ export function SettingsPanel({
               Show onboarding
             </Button>
           </div>
-
-          {/* Version info */}
-          <div className="pt-4 border-t">
-            <div className="text-xs text-muted-foreground text-center">
-              Version: {latestVersion ?? '...'}
-            </div>
-          </div>
         </div>
       </div>
     </>,
