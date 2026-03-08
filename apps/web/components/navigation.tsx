@@ -191,11 +191,30 @@ export function Navigation() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <Link href="/signin">
-                  <Button variant="outline" className="font-semibold">
-                    Sign In
-                  </Button>
-                </Link>
+                <Button 
+                  variant="outline" 
+                  className="font-semibold"
+                  onClick={() => {
+                    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://caplayground.vercel.app";
+                    if (typeof window !== 'undefined') {
+                      const eb = (window as any).__electrobun;
+                      const bridge = (window as any).__electrobunBunBridge;
+                      if (eb?.openExternal) {
+                        eb.openExternal(`${baseUrl}/auth/desktop-authorize`);
+                      } else if (bridge) {
+                        bridge.postMessage(JSON.stringify({
+                          type: 'message',
+                          id: 'openExternal',
+                          payload: `${baseUrl}/auth/desktop-authorize`
+                        }));
+                      } else {
+                        window.location.href = '/signin';
+                      }
+                    }
+                  }}
+                >
+                  Sign In
+                </Button>
               )}
               <Link href="/projects">
                 <Button variant="default" className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold">
@@ -312,11 +331,31 @@ export function Navigation() {
                         </Button>
                       </Link>
                     ) : (
-                      <Link href="/signin" onClick={() => setIsMenuOpen(false)} className="flex-1">
-                        <Button variant="outline" className="w-full text-lg h-10">
-                          Sign In
-                        </Button>
-                      </Link>
+                      <Button 
+                        variant="outline" 
+                        className="flex-1 text-lg h-10"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://caplayground.vercel.app";
+                          if (typeof window !== 'undefined') {
+                            const eb = (window as any).__electrobun;
+                            const bridge = (window as any).__electrobunBunBridge;
+                            if (eb?.openExternal) {
+                              eb.openExternal(`${baseUrl}/auth/desktop-authorize`);
+                            } else if (bridge) {
+                              bridge.postMessage(JSON.stringify({
+                                type: 'message',
+                                id: 'openExternal',
+                                payload: `${baseUrl}/auth/desktop-authorize`
+                              }));
+                            } else {
+                              window.location.href = '/signin';
+                            }
+                          }
+                        }}
+                      >
+                        Sign In
+                      </Button>
                     )}
                     <Link href="/projects" onClick={() => setIsMenuOpen(false)} className="flex-1">
                       <Button

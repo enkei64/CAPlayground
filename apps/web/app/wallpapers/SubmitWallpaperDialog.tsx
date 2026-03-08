@@ -338,9 +338,29 @@ export function SubmitWallpaperDialog({ open, onOpenChange, username = "Anonymou
               <p className="text-muted-foreground">
                 Please sign in to your account to submit wallpapers to the gallery.
               </p>
-              <Link href="/signin">
-                <Button className="w-full sm:w-auto">Sign In</Button>
-              </Link>
+              <Button 
+                className="w-full sm:w-auto"
+                onClick={() => {
+                  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://caplayground.vercel.app";
+                  if (typeof window !== 'undefined') {
+                    const eb = (window as any).__electrobun;
+                    const bridge = (window as any).__electrobunBunBridge;
+                    if (eb?.openExternal) {
+                      eb.openExternal(`${baseUrl}/auth/desktop-authorize`);
+                    } else if (bridge) {
+                      bridge.postMessage(JSON.stringify({
+                        type: 'message',
+                        id: 'openExternal',
+                        payload: `${baseUrl}/auth/desktop-authorize`
+                      }));
+                    } else {
+                      window.location.href = '/signin';
+                    }
+                  }
+                }}
+              >
+                Sign In
+              </Button>
             </div>
           </>
         ) : step === "form" ? (
