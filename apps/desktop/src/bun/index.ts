@@ -161,6 +161,17 @@ try {
     fs.mkdirSync(APP_DATA_DIR, { recursive: true });
     const cefCachePath = path.join(os.homedir(), ".cache", "com.caplayground.desktop");
     fs.mkdirSync(cefCachePath, { recursive: true });
+    
+    const cefSingletonLock = path.join(cefCachePath, "SingletonLock");
+    const cefSingletonSocket = path.join(cefCachePath, "SingletonSocket");
+    const cefSingletonCookie = path.join(cefCachePath, "SingletonCookie");
+    
+    try {
+        if (fs.existsSync(cefSingletonLock)) fs.unlinkSync(cefSingletonLock);
+        if (fs.existsSync(cefSingletonSocket)) fs.unlinkSync(cefSingletonSocket);
+        if (fs.existsSync(cefSingletonCookie)) fs.unlinkSync(cefSingletonCookie);
+    } catch (cleanupErr) {
+    }
 } catch (e) {
     console.warn("[Init] Failed to ensure directories exist:", e);
 }

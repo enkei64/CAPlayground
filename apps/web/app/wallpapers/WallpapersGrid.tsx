@@ -276,7 +276,10 @@ export function WallpapersGrid({ data, disableUrlSync = false }: { data: Wallpap
 
   useEffect(() => {
     console.log('Fetching download stats...')
-    fetch('/api/wallpapers/stats')
+    const statsUrl = process.env.NEXT_PUBLIC_DESKTOP === 'true'
+      ? 'https://caplayground.vercel.app/api/wallpapers/stats'
+      : '/api/wallpapers/stats'
+    fetch(statsUrl)
       .then(res => res.json())
       .then((stats: Array<{ id: string; downloads: number }> | { error: string }) => {
         console.log('Download stats received:', stats)
