@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 import { $ } from "bun";
-import { cpSync, existsSync, mkdirSync, rmSync, symlinkSync } from "fs";
-import { resolve, dirname } from "path";
+import { cpSync, existsSync, mkdirSync, rmSync, symlinkSync, readdirSync } from "fs";
+import { resolve, dirname, join } from "path";
 
 const DESKTOP_ROOT = resolve(import.meta.dirname, "..");
 const WEB_ROOT = resolve(DESKTOP_ROOT, "..", "web");
@@ -17,12 +17,39 @@ mkdirSync(SHADOW_ROOT, { recursive: true });
 
 try {
     console.log("[preBuild] Syncing source files to shadow...");
-    await $`rsync -a --exclude=".next" --exclude="node_modules" --exclude="out" --exclude=".git" ${WEB_ROOT}/ ${SHADOW_ROOT}/`;
+    
+    function copyRecursive(src: string, dest: string, exclude: string[]) {
+        const entries = readdirSync(src, { withFileTypes: true });
+        
+        for (const entry of entries) {
+            const srcPath = join(src, entry.name);
+            const destPath = join(dest, entry.name);
+
+            if (exclude.includes(entry.name)) {
+                continue;
+            }
+            
+            if (entry.isDirectory()) {
+                mkdirSync(destPath, { recursive: true });
+                copyRecursive(srcPath, destPath, exclude);
+            } else {
+                cpSync(srcPath, destPath);
+            }
+        }
+    }
+    
+    copyRecursive(WEB_ROOT, SHADOW_ROOT, ['.next', 'node_modules', 'out', '.git']);
 
     const webModules = resolve(WEB_ROOT, "node_modules");
     const shadowModules = resolve(SHADOW_ROOT, "node_modules");
     if (existsSync(webModules)) {
-        symlinkSync(webModules, shadowModules, "dir");
+        try {
+            const symlinkType = process.platform === 'win32' ? 'junction' : 'dir';
+            symlinkSync(webModules, shadowModules, symlinkType);
+        } catch (e) {
+            console.log("[preBuild] Symlink failed, copying node_modules instead...");
+            cpSync(webModules, shadowModules, { recursive: true });
+        }
     }
 } catch (e) {
     console.error("[preBuild] Failed to prepare shadow environment:", e);
@@ -63,12 +90,11 @@ try {
     console.log("[preBuild] Building Next.js static export in shadow...");
     const shadowOut = resolve(SHADOW_ROOT, "out");
 
-    await $`NEXT_PUBLIC_DESKTOP=true bun x next build`.cwd(SHADOW_ROOT);
+    await $`NEXT_PUBLIC_DESKTOP=true bun x next build`.env({ NEXT_PUBLIC_DESKTOP: 'true' }).cwd(SHADOW_ROOT);
 
     if (!existsSync(shadowOut)) {
         throw new Error("Build output 'out' not found in shadow.");
     }
-
 
     console.log("[preBuild] Copying build results to desktop views...");
     if (existsSync(VIEWS_APP)) {
@@ -81,7 +107,6 @@ try {
     console.error("[preBuild] Build failed in shadow environment:", e);
     process.exit(1);
 } finally {
-
     console.log("[preBuild] Cleaning up shadow environment...");
 }
 
