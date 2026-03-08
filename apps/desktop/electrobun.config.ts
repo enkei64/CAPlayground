@@ -30,17 +30,17 @@ export default {
         mac: {
             bundleCEF: true,
             defaultRenderer: "cef",
-            icons: "assets/app-dark.png",
+            icons: "assets/icon.icns",
         },
         linux: {
             bundleCEF: true,
             defaultRenderer: "cef",
-            icon: "assets/app-dark.png",
+            icon: "assets/icon.png",
         },
         win: {
             bundleCEF: true,
             defaultRenderer: "cef",
-            icon: "assets/app-dark.png",
+            icon: "assets/icon.png",
         },
     },
     scripts: {
