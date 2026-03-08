@@ -6,9 +6,11 @@ import { Home, Compass, User, BookOpen, X, Minus, Square, Folder, Settings, Hear
 import { ProjectsContent } from "@/app/projects/page"
 import { WallpapersGrid } from "@/app/wallpapers/WallpapersGrid"
 import AccountPage from "@/app/account/page"
+import { SettingsTabs } from "@/components/settings-tabs"
 import { cn } from "@/lib/utils"
 import { getSupabaseBrowserClient } from "@/lib/supabase"
 import { readText, remove } from "@/lib/fs"
+import { useDiscordPresence } from "@/hooks/use-discord-presence"
 
 export default function DesktopHome() {
     const [activeTab, setActiveTab] = useState<"home" | "projects" | "community" | "docs" | "account" | "settings">("home")
@@ -20,6 +22,17 @@ export default function DesktopHome() {
     });
     const [isSignedIn, setIsSignedIn] = useState(false);
     const [username, setUsername] = useState<string | null>(null);
+
+    const presenceDetails = {
+        home: "Browsing home",
+        projects: "Browsing projects",
+        community: "Browsing community wallpapers",
+        docs: "Reading documentation",
+        account: "Managing account",
+        settings: "Adjusting settings"
+    }[activeTab]
+    
+    useDiscordPresence(presenceDetails, undefined)
 
     const restoreSession = async () => {
         const supabase = getSupabaseBrowserClient();
@@ -348,82 +361,7 @@ export default function DesktopHome() {
                                     <p className="text-muted-foreground mt-2">Manage your app preferences and view credits.</p>
                                 </div>
 
-                                <div className="space-y-6 flex flex-col pb-12">
-                                    {/* RPC Settings */}
-                                    <div className="p-6 bg-card border border-border/80 rounded-xl shadow-sm">
-                                        <h3 className="text-xl font-semibold mb-4 border-b pb-2">Discord Rich Presence</h3>
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <p className="font-medium text-foreground">Share activity</p>
-                                                <p className="text-sm text-muted-foreground">Show what you're doing in CAPlayground on Discord.</p>
-                                            </div>
-                                            <div className="flex py-1 px-3 bg-green-500/10 text-green-600 dark:text-green-400 rounded-full text-sm font-medium items-center gap-1.5 border border-green-500/20">
-                                                <CheckCircle2 className="h-4 w-4" />
-                                                Always Active
-                                            </div>
-                                        </div>
-                                        <div className="mt-4 p-3 bg-muted/50 rounded-lg text-sm text-muted-foreground">
-                                            Currently, Discord integrations are baked directly into the desktop client.
-                                            Future updates will implement dynamic toggle controls!
-                                        </div>
-                                    </div>
-
-                                    {/* Credits Settings */}
-                                    <div className="p-6 bg-card border border-border/80 rounded-xl shadow-sm">
-                                        <h3 className="text-xl font-semibold mb-4 border-b pb-2 flex items-center gap-2">
-                                            <Heart className="h-5 w-5 text-red-500" />
-                                            Credits & Contributors
-                                        </h3>
-                                        <p className="text-sm text-muted-foreground mb-4">
-                                            CAPlayground is made possible by an incredible open-source community. Special thanks to the following contributors for their work on the underlying technologies:
-                                        </p>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <div className="p-4 border rounded-lg bg-background">
-                                                <h4 className="font-bold flex items-center gap-2 mb-1">
-                                                    enkei64
-                                                </h4>
-                                                <p className="text-xs text-muted-foreground">Creator and Lead Maintainer of CAPlayground</p>
-                                            </div>
-                                            <div className="p-4 border rounded-lg bg-background">
-                                                <h4 className="font-bold mb-1">TattoistDev</h4>
-                                                <p className="text-xs text-muted-foreground">Developer of CAPlayground, Wallpapers Maintainer</p>
-                                            </div>
-                                            <div className="p-4 border rounded-lg bg-background">
-                                                <h4 className="font-bold mb-1">blackboardsh</h4>
-                                                <p className="text-xs text-muted-foreground">Creator of Electrobun framework used for desktop platform builds</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-6 flex justify-center">
-                                            <button
-                                                onClick={() => {
-                                                    const url = 'https://caplayground.vercel.app/contributors';
-                                                    if (typeof window !== "undefined") {
-                                                        const eb = (window as any).__electrobun;
-                                                        const bridge = (window as any).__electrobunBunBridge;
-                                                        if (eb?.messages?.openExternal) {
-                                                            eb.messages.openExternal(url);
-                                                        } else if (eb?.openExternal) {
-                                                            eb.openExternal(url);
-                                                        } else if (bridge) {
-                                                            bridge.postMessage(JSON.stringify({
-                                                                type: 'message',
-                                                                id: 'openExternal',
-                                                                payload: url
-                                                            }));
-                                                        } else {
-                                                            window.open(url, '_blank');
-                                                        }
-                                                    }
-                                                }}
-                                                className="text-sm font-medium text-accent hover:underline flex items-center gap-1 group/more"
-                                            >
-                                                View more contributors <Compass className="h-3 w-3 transition-transform group-hover/more:rotate-45" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                                <SettingsTabs />
                             </div>
                         )}
 

@@ -223,6 +223,17 @@ function encodeDiscord(op: number, data: object): Buffer {
 }
 
 function setDiscordPresence(details: string, state?: string) {
+    if (typeof window !== 'undefined') {
+        try {
+            const enabled = localStorage.getItem('caplay_discord_rpc_enabled');
+            if (enabled === 'false') {
+                console.log('[Discord RPC] Disabled in settings, skipping presence update');
+                return;
+            }
+        } catch (e) {
+        }
+    }
+    
     if (!discordReady || !discordSock) {
         pendingPresence = { details, state };
         return;
