@@ -180,7 +180,7 @@ export function MenuBar({ projectId, showLeft = true, showRight = true, toggleLe
                 className="cursor-pointer"
                 onClick={async () => { await flushPersist(); router.push(IS_DESKTOP ? 'home.html' : '/projects'); }}
               >
-                <ArrowLeft className="h-4 w-4 mr-2" /> Back to projects
+                <ArrowLeft className="h-4 w-4 mr-2" /> {IS_DESKTOP ? 'Back to home' : 'Back to projects'}
               </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer" onClick={() => setRenameOpen(true)}>
                 <Pencil className="h-4 w-4 mr-2" /> Rename
